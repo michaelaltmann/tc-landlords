@@ -18,6 +18,7 @@ from django.urls import path, include
 
 #path('admin/', admin.site.urls),
 
-urlpatterns = [    
+urlpatterns = [
+    path('licenses', include('licenses.urls')),
     path('', include('hello.urls')),
 ]
