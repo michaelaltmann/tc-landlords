@@ -20,7 +20,8 @@ def cleanAddressLine(address):
             finish = match.span()[1]
             streetName = match.group(2)
             if not streetName in ['th', 'st', 'rd', 'nd'] and len(streetName) > 0:
-                s = s[:start] + match.group(1) + " " + match.group(2) + s[finish:]
+                s = s[:start] + match.group(1) + \
+                    " " + match.group(2) + s[finish:]
         # Condense whitespace
         s = re.sub('\s+', ' ', s)
         # print(address)
@@ -32,7 +33,7 @@ def cleanAddressLine(address):
 
 def cleanAddressPair(s, s2):
     s = cleanAddressLine(s)
-    if isinstance(s,str) and 'pobox' in s:
+    if isinstance(s, str) and 'pobox' in s:
         s2 = cleanAddressLine(s2)
         if s2:
             s = s + s2
@@ -59,7 +60,7 @@ def cleanEmail(s):
 
 
 def load():
-    df = pd.read_csv('/Users/michaelaltmann/data/licences-raw.csv', index_col=0,
+    df = pd.read_csv('licences-raw.csv', index_col=0,
                      low_memory=False)
     return df
 
@@ -71,17 +72,18 @@ def clean(df):
     '''
 
     # do minimal cleaning in place
-    df['ownerPhone'] = df['ownerPhone'].str.replace("\n","")
-    df['ownerEmail'] = df['ownerEmail'].str.replace("\n","")
-    df['ownerName'] = df['ownerName'].str.replace("\n","")
-    df['ownerAddre'] = df['ownerAddre'].str.replace("\n","")
-    df['ownerAdd_1'] = df['ownerAdd_1'].str.replace("\n","")
+    df['ownerPhone'] = df['ownerPhone'].str.replace("\n", "")
+    df['ownerEmail'] = df['ownerEmail'].str.replace("\n", "")
+    df['ownerName'] = df['ownerName'].str.replace("\n", "")
+    df['ownerAddre'] = df['ownerAddre'].str.replace("\n", "")
+    df['ownerAdd_1'] = df['ownerAdd_1'].str.replace("\n", "")
 
     # create new columns
-    df['xPhone'] = df['ownerPhone'].str.replace("[\(\)\-\.\s]","", regex=True)
+    df['xPhone'] = df['ownerPhone'].str.replace("[\(\)\-\.\s]", "", regex=True)
     df['xEmail'] = df['ownerEmail'].apply(cleanEmail)
     df['xName'] = df['ownerName'].apply(cleanEmail)
-    df['xAddress'] = df.apply(lambda row: cleanAddressPair(row['ownerAddre'], row['ownerAdd_1']), axis=1)
+    df['xAddress'] = df.apply(lambda row: cleanAddressPair(
+        row['ownerAddre'], row['ownerAdd_1']), axis=1)
     return df
 
 
@@ -106,8 +108,9 @@ def createGroups(df):
     addLinksForAttribute(df, uf, 'xAddress')
     print(f"After linking by xAddress  n_comps={uf.n_comps}")
 
-    df['groupId'] = df['OBJECTID'].apply(lambda id : uf.find(id))
-    df['groupSize'] = df['OBJECTID'].apply(lambda id : len(uf.component(id)))
+    df['groupId'] = df['OBJECTID'].apply(lambda id: uf.find(id))
+    df['groupSize'] = df['OBJECTID'].apply(lambda id: len(uf.component(id)))
+
 
 def addLinksForAttribute(df, uf, attribute):
     g = df.groupby(attribute)['OBJECTID']
@@ -126,5 +129,5 @@ if __name__ == "__main__":
     createGroups(df)
     print(df)
     df.to_csv('clean_grouped_rental_licenses.csv')
-    manyProperties = df[df.groupSize>5].sort_values(by='groupId')
+    manyProperties = df[df.groupSize > 5].sort_values(by='groupId')
     print(manyProperties)
