@@ -1,0 +1,11 @@
+<h2>Summary of Rental Licenses</h2>
+<pre>
+    {{ licenses }}
+</pre>
+
+Get information for an APN
+<form action="./property" method="post">
+    {% csrf_token %}
+    APN: <input name="apn"/>
+    <input type="submit" value="Search">
+</form>
