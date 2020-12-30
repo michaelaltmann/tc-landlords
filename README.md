@@ -24,3 +24,11 @@ The is a very simple Django app that allows you to find all properties that are 
 ## Changes to Django settings
 
 ## Contributing
+
+## Deploying
+
+With the Azure commandline installed and authenticated, run
+
+```
+az webapp up --name tc-landlords --resource-group michael.altmann_rg_Linux_centralus
+```
