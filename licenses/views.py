@@ -19,7 +19,8 @@ def property(request):
         apn = request.POST['apn']
     license = licenses.loc[apn]
     groupId = license['groupId']
-    sameOwner = licenses.loc[licenses['groupId'] == groupId]
+    sameOwner = licenses.loc[licenses['groupId']
+                             == groupId][['licenseNum', 'address']]
     context = {'licenses': licenses,
                'apn': apn,
                'license': license,
