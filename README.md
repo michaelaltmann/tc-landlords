@@ -25,6 +25,41 @@ The is a very simple Django app that allows you to find all properties that are 
 
 ## Contributing
 
+## Running Locally
+
+Clone this repo
+
+```
+git clone https://github.com/michaelaltmann/tc-landlords.git
+```
+
+Install python 3.7.x
+
+```
+pyenv install 3.7.9
+pyenv local 3.7.9
+```
+
+Create a python virtual environment
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Install the dependencies
+
+```
+pip -r requirements.txt
+```
+
+Start the server
+
+```
+python manage.py runserver
+```
+
 ## Deploying
 
 With the Azure commandline installed and authenticated, run
