@@ -9,10 +9,12 @@ class Violations:
         # Address	Tier	Case Number	Violation Code	Violation Code Description	Violation Grouping	Violation Resolved?	Violator Name   	Violator Name	Violation Date
 
         columns = ['address', 'tier', 'caseNumber', 'code', 'description',
-                   'grouping', 'isResolved', 'filler1', 'violatorName', 'violationDate']
+                   'grouping', 'isResolved', 'filler1', 'violatorName', 'violationDateStr']
         df = pd.concat([pd.read_csv(f, delimiter="\t",
                                     header=0, names=columns,
                                     low_memory=False, encoding='utf-16') for f in all_files])
+        df['violationDate'] = pd.to_datetime(
+            df['violationDateStr'], format="%m/%d/%Y", errors='coerce').dt.strftime('%Y-%m-%d')
         self.violations = df
 
 

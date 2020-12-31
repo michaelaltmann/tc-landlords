@@ -19,7 +19,8 @@ def index(request):
     """
     Home page for rental licenses
     """
-    context = {'licenses': licenses, 'address': ''}
+    context = {'licenses': licenses[[
+        'address', 'ownerName', 'groupSize']], 'address': ''}
     return render(request, 'index.html', context)
 
 
@@ -35,6 +36,11 @@ def property(request):
         apn = request.GET['apn']
     elif request.method == "POST":
         apn = request.POST['apn']
+    if not apn in licenses.index:
+        context = {
+            'message': 'No matching property'
+        }
+        return render(request, 'list.html', context)
     license = licenses.loc[apn]
     groupId = license['groupId']
     sameOwner = licenses.loc[licenses['groupId']
@@ -42,7 +48,8 @@ def property(request):
     sameOwner['violationCount'] = sameOwner['address'].apply(
         lambda address: countViolations(address))
     sameOwner = sameOwner.reset_index().sort_values(by='address')
-    propertyViolations = violations[violations.address == license['address']]
+    propertyViolations = violations[violations.address ==
+                                    license['address']].sort_values(by='violationDate', ascending=False)
     print(f"Violations:\n{propertyViolations}")
     context = {'licenses': licenses,
                'apn': apn,

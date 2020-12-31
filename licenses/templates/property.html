@@ -16,13 +16,17 @@
 <h2>Violations</h2>
 <table>
     <thead>
-         <td>Date</td>
+        <td>Date</td>
+        <td>Case No.</td>
+        <td>Grouping</td>
         <td>Description</td>
     </thead>
     <tbody>
 {% for violation in violations %}
 <tr>
     <td>{{violation.violationDate }}</td>
+    <td>{{violation.caseNumber }}</td>
+    <td>{{violation.grouping }}</td>
     <td>{{violation.description }}</td>
 </tr>
 {% endfor %}

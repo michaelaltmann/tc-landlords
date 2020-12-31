@@ -1,5 +1,7 @@
 <h2> Rental Properties</h2>
-
+{% if message %}
+    <h4>{{message}}</h4>
+{% else %}
 <table>
     <thead>
         <td>APN</td>
@@ -18,7 +20,15 @@
 {% endfor %}
 </tbody>
 </table>
+{% endif %}
+Get information for an APN
+<form action="./property" method="post">
+    {% csrf_token %}
+    APN: <input name="apn"/>
+    <input type="submit" value="Search">
+</form>
 
+Search for a rental property by address
 <form action="./search" method="post">
     {% csrf_token %}
     Address: <input name="address" value = "{{address}}"/>
