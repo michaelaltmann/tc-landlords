@@ -2,6 +2,12 @@ from django.shortcuts import render
 import pandas as pd
 from django.http import HttpResponse
 from .transform import cleanAddressLine
+from violations.violations import Violations
+
+v = Violations()
+v.load()
+violations = v.violations
+print(violations)
 
 # Create your views here.
 print('** Loading licenses **')
@@ -17,6 +23,10 @@ def index(request):
     return render(request, 'index.html', context)
 
 
+def countViolations(address):
+    return len(violations[violations.address == address].index)
+
+
 def property(request):
     """
     Display info about one property
@@ -29,11 +39,16 @@ def property(request):
     groupId = license['groupId']
     sameOwner = licenses.loc[licenses['groupId']
                              == groupId][['licenseNum', 'address', 'ownerName']]
+    sameOwner['violationCount'] = sameOwner['address'].apply(
+        lambda address: countViolations(address))
     sameOwner = sameOwner.reset_index().sort_values(by='address')
+    propertyViolations = violations[violations.address == license['address']]
+    print(f"Violations:\n{propertyViolations}")
     context = {'licenses': licenses,
                'apn': apn,
                'license': license,
-               'sameOwner': sameOwner.to_dict(orient='records')}
+               'sameOwner': sameOwner.to_dict(orient='records'),
+               'violations': propertyViolations.to_dict(orient='records')}
     return render(request, 'property.html', context)
 
 

@@ -12,6 +12,23 @@
 {{ license }}
     </pre>
 </p>
+
+<h2>Violations</h2>
+<table>
+    <thead>
+         <td>Date</td>
+        <td>Description</td>
+    </thead>
+    <tbody>
+{% for violation in violations %}
+<tr>
+    <td>{{violation.violationDate }}</td>
+    <td>{{violation.description }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
 <p>
 <h2>Other Properties for this Landlord</h2>
 <table>
@@ -20,6 +37,7 @@
         <td>License</td>
         <td>Address</td>
         <td>Owner</td>
+        <td>Violations</td>
     </thead>
     <tbody>
 {% for prop in sameOwner %}
@@ -28,6 +46,7 @@
     <td>{{prop.licenseNum }}</td>
     <td>{{prop.address }}</td>
     <td>{{prop.ownerName }}</td>
+    <td>{{prop.violationCount }}</td>
 </tr>
 {% endfor %}
 </tbody>
