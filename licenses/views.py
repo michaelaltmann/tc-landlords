@@ -1,8 +1,10 @@
 from django.shortcuts import render
 import pandas as pd
 from django.http import HttpResponse
+from .transform import cleanAddressLine
 
 # Create your views here.
+print('** Loading licenses **')
 licenses = pd.read_csv('licenses/clean_grouped_rental_licenses.csv', index_col=0,
                        low_memory=False)
 
@@ -11,7 +13,7 @@ def index(request):
     """
     Home page for rental licenses
     """
-    context = {'licenses': licenses}
+    context = {'licenses': licenses, 'address': ''}
     return render(request, 'index.html', context)
 
 
@@ -33,3 +35,21 @@ def property(request):
                'license': license,
                'sameOwner': sameOwner.to_dict(orient='records')}
     return render(request, 'property.html', context)
+
+
+def search(request):
+    """
+    Display a list of properties that match search criteria
+    """
+    if request.method == "GET":
+        address = request.GET['address']
+    elif request.method == "POST":
+        address = request.POST['address']
+    address = address
+    matches = licenses[licenses.address.str.contains(
+        address, na=False, case=False)]
+    matches = matches[['licenseNum', 'address', 'ownerName']
+                      ].reset_index().sort_values(by='address')
+    context = {'address': address,
+               'properties': matches.to_dict(orient='records')}
+    return render(request, 'list.html', context)

@@ -1,19 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Property</title>
-</head>
-<body>
-<a href="/licenses">Back</a>
-<p>
-    <h2>Property Details</h2>
-    <pre>
-{{ license }}
-    </pre>
-</p>
-<p>
-<h2>Other Properties for this Landlord</h2>
+<h2> Rental Properties</h2>
+
 <table>
     <thead>
         <td>APN</td>
@@ -22,7 +8,7 @@
         <td>Owner</td>
     </thead>
     <tbody>
-{% for prop in sameOwner %}
+{% for prop in properties %}
 <tr>
     <td><a href="property?apn={{prop.apn}}" >{{prop.apn }}</a></td>
     <td>{{prop.licenseNum }}</td>
@@ -32,6 +18,9 @@
 {% endfor %}
 </tbody>
 </table>
-</p>
-</body>
-</html>
+
+<form action="./search" method="post">
+    {% csrf_token %}
+    Address: <input name="address" value = "{{address}}"/>
+    <input type="submit" value="Search">
+</form>

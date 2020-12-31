@@ -9,3 +9,10 @@ Get information for an APN
     APN: <input name="apn"/>
     <input type="submit" value="Search">
 </form>
+
+Search for a rental property by address
+<form action="./search" method="post">
+    {% csrf_token %}
+    Address: <input name="address" value = "{{address}}"/>
+    <input type="submit" value="Search">
+</form>

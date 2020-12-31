@@ -1,6 +1,6 @@
 import pandas as pd
 import re
-from union_find import UnionFind
+from .union_find import UnionFind
 
 street_abvs = r" ave(\Z| )| av(\Z| )| ste(\Z| )| blvd(\Z| )| st(\Z| )| drive(\Z| )| dr(\Z| )|#| ln(\Z| )| dri(\Z| )| ter(\Z| )| pl(\Z| )| street(\Z| )| ct(\Z| )| rd(\Z| )| cicle(\Z| )| road(\Z| )| lane(\Z| )| trail(\Z| )| way(\Z| )| pk(\Z| )| avenue(\Z| )| place(\Z| )| hwy(\Z| )| court(\Z| )| cir(\Z| )| pkwy(\Z| )| xing(\Z| )"
 
