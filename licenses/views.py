@@ -114,7 +114,7 @@ def portfolios(request):
     matches = pd.concat([matchingOwnerName, matchingApplicantName])
     g = matches.groupby('groupId')['ownerName']
     portfolios = [{'groupId': groupId, 'ownerNames': ", ".join(
-        group.tolist())} for groupId, group in g]
+        list(set(group.tolist())))} for groupId, group in g]
     context = {
         'portfolios': portfolios
     }
