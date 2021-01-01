@@ -3,6 +3,7 @@
 {% block title %}Summary of Rental Licenses{% endblock title %}
 
 {% block content %}
+A sample of license data
 <pre>
     {{ licenses }}
 </pre>
@@ -18,6 +19,13 @@ Search for a rental property by address
 <form action="./search" method="post">
     {% csrf_token %}
     Address: <input name="address" value = "{{address}}"/>
+    <input type="submit" value="Search">
+</form>
+
+Search for owners
+<form action="./portfolios" method="post">
+    {% csrf_token %}
+    Name: <input name="name" value = "{{name}}"/>
     <input type="submit" value="Search">
 </form>
 {% endblock content %}

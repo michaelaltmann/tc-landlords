@@ -38,7 +38,7 @@ def property(request):
         apn = request.POST['apn']
     if not apn in licenses.index:
         context = {
-            'message': 'No matching property'
+            'message': 'No matching rental license'
         }
         return render(request, 'licenses/list.html', context)
     license = licenses.loc[apn]
@@ -59,6 +59,29 @@ def property(request):
     return render(request, 'licenses/property.html', context)
 
 
+def portfolio(request):
+    """
+    Display all the properties for one portfolio
+    """
+    if request.method == "GET":
+        portfolioId = request.GET['portfolioId']
+    elif request.method == "POST":
+        portfolioId = request.POST['portfolioId']
+    portfolioId = int(portfolioId)
+    sameOwner = licenses.loc[licenses['groupId']
+                             == portfolioId][['licenseNum', 'address', 'ownerName']]
+    sameOwner['violationCount'] = sameOwner['address'].apply(
+        lambda address: countViolations(address))
+    sameOwner = sameOwner.reset_index().sort_values(by='address')
+    print(f"Portfolio {portfolioId}\n{sameOwner}")
+
+    context = {
+        'portfolioId': portfolioId,
+        'sameOwner': sameOwner.to_dict(orient='records')
+    }
+    return render(request, 'licenses/portfolio.html', context)
+
+
 def search(request):
     """
     Display a list of properties that match search criteria
@@ -67,7 +90,6 @@ def search(request):
         address = request.GET['address']
     elif request.method == "POST":
         address = request.POST['address']
-    address = address
     matches = licenses[licenses.address.str.contains(
         address, na=False, case=False)]
     matches = matches[['licenseNum', 'address', 'ownerName']
@@ -75,3 +97,25 @@ def search(request):
     context = {'address': address,
                'properties': matches.to_dict(orient='records')}
     return render(request, 'licenses/list.html', context)
+
+
+def portfolios(request):
+    """
+    Find portfolios by owner name
+    """
+    if request.method == "GET":
+        name = request.GET['name']
+    elif request.method == "POST":
+        name = request.POST['name']
+    matchingOwnerName = licenses[licenses.ownerName.str.contains(
+        name, na=False, case=False)]
+    matchingApplicantName = licenses[licenses.applicantN.str.contains(
+        name, na=False, case=False)]
+    matches = pd.concat([matchingOwnerName, matchingApplicantName])
+    g = matches.groupby('groupId')['ownerName']
+    portfolios = [{'groupId': groupId, 'ownerNames': ", ".join(
+        group.tolist())} for groupId, group in g]
+    context = {
+        'portfolios': portfolios
+    }
+    return render(request, 'licenses/portfolios.html', context)

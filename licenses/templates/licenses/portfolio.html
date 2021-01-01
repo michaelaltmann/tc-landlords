@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Portfolio {% endblock title %}
+
+{% block content %}
+
+<p>
+<h2>Licenses for Portfolio {{portfolioId}}</h2>
+<table>
+    <thead>
+        <td>APN</td>
+        <td>License</td>
+        <td>Address</td>
+        <td>Owner</td>
+        <td>Violations</td>
+    </thead>
+    <tbody>
+{% for prop in sameOwner %}
+<tr>
+    <td><a href="property?apn={{prop.apn}}" >{{prop.apn }}</a></td>
+    <td>{{prop.licenseNum }}</td>
+    <td>{{prop.address }}</td>
+    <td>{{prop.ownerName }}</td>
+    <td>{{prop.violationCount }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</p>
+{% endblock content %}

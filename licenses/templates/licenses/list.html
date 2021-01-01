@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Rental Properties{% endblock title %}
+{% block title %}Rental Licenses{% endblock title %}
 {% block content %}
 {% if message %}
     <h4>{{message}}</h4>
@@ -35,6 +35,13 @@ Search for a rental property by address
 <form action="./search" method="post">
     {% csrf_token %}
     Address: <input name="address" value = "{{address}}"/>
+    <input type="submit" value="Search">
+</form>
+
+Search for owners
+<form action="./portfolios" method="post">
+    {% csrf_token %}
+    Name: <input name="name" value = "{{name}}"/>
     <input type="submit" value="Search">
 </form>
 {% endblock content %}

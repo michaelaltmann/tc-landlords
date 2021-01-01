@@ -1,3 +1,91 @@
+/* Helper Classes */
+
+.side-p {
+  padding: 0 24px;
+}
+
+.p-none {
+  padding: 0 !important;
+}
+
+.m-none {
+  margin: 0 !important;
+}
+
+.p-l-none {
+  padding-left: 0 !important;
+}
+
+.p-r-none {
+  padding-right: 0 !important;
+}
+
+.p-t-none {
+  padding-top: 0 !important;
+}
+
+.p-b-none {
+  padding-bottom: 0 !important;
+}
+
+.m-l-none {
+  margin-left: 0 !important;
+}
+
+.m-r-none {
+  margin-right: 0 !important;
+}
+
+.m-t-none {
+  margin-top: 0 !important;
+}
+
+.m-b-none {
+  margin-bottom: 0 !important;
+}
+
+.errorlist {
+  padding: 0;
+  list-style-type: none;
+  color: darkred;
+}
+
+.strip-list {
+  list-style-type: none;
+}
+
+/* Base.html Styles */
+
+html,
 body {
-  margin: 20px;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background-color: #f7fbfd;
+  margin: 10px;
+}
+
+#site-wrapper {
+  min-height: 100%;
+  width: 100%;
+  background-color: #f5fafc;
+  display: inline-block;
+}
+
+#content-container {
+  min-height: 700px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  background-color: white;
+  border: 1px solid #cccccc;
+}
+
+.footer {
+  background: #353f45;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  width: 100%;
 }

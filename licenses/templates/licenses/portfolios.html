@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Portfolios{% endblock title %}
+{% block content %}
+
+<table>
+    <thead>
+        <td>Portfolio</td>
+        <td>Owners</td>
+    </thead>
+    <tbody>
+{% for x in portfolios %}
+<tr>
+    <td><a href="portfolio?portfolioId={{x.groupId}}" >{{x.groupId }}</a></td>
+    <td>{{x.ownerNames}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock content %}
+
