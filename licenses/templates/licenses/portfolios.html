@@ -7,12 +7,14 @@
     <thead>
         <td>Portfolio</td>
         <td>Owners</td>
+        <td>Applicants</td>
     </thead>
     <tbody>
 {% for x in portfolios %}
 <tr>
     <td><a href="portfolio?portfolioId={{x.portfolioId}}" >{{x.portfolioId }}</a></td>
     <td>{{x.ownerNames}}</td>
+    <td>{{x.applicantNames}}</td>
 </tr>
 {% endfor %}
 </tbody>

@@ -112,9 +112,14 @@ def portfolios(request):
     matchingApplicantName = licenses[licenses.applicantN.str.contains(
         name, na=False, case=False, regex=True)]
     matches = pd.concat([matchingOwnerName, matchingApplicantName])
-    g = matches.groupby('portfolioId')['ownerName']
-    portfolios = [{'portfolioId': portfolioId, 'ownerNames': ", ".join(
-        list(set(group.tolist())))} for portfolioId, group in g]
+    g = matches.groupby('portfolioId')['ownerName', 'applicantN']
+    portfolios = [{
+        'portfolioId': portfolioId,
+        'ownerNames': "; ".join(
+            list(set(group['ownerName'].tolist()))),
+        'applicantNames': "; ".join(
+            list(set(group['applicantN'].tolist()))),
+    } for portfolioId, group in g]
     context = {
         'portfolios': portfolios
     }
