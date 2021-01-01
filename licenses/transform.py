@@ -108,8 +108,9 @@ def createGroups(df):
     addLinksForAttribute(df, uf, 'xAddress')
     print(f"After linking by xAddress  n_comps={uf.n_comps}")
 
-    df['groupId'] = df['OBJECTID'].apply(lambda id: uf.find(id))
-    df['groupSize'] = df['OBJECTID'].apply(lambda id: len(uf.component(id)))
+    df['portfolioId'] = df['OBJECTID'].apply(lambda id: uf.find(id))
+    df['portfolioSize'] = df['OBJECTID'].apply(
+        lambda id: len(uf.component(id)))
 
 
 def addLinksForAttribute(df, uf, attribute):
@@ -129,5 +130,5 @@ if __name__ == "__main__":
     createGroups(df)
     print(df)
     df.to_csv('clean_grouped_rental_licenses.csv')
-    manyProperties = df[df.groupSize > 5].sort_values(by='groupId')
+    manyProperties = df[df.portfolioSize > 5].sort_values(by='portfolioId')
     print(manyProperties)

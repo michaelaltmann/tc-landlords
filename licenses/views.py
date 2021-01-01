@@ -20,7 +20,7 @@ def index(request):
     Home page for rental licenses
     """
     context = {'licenses': licenses[[
-        'address', 'ownerName', 'groupSize']], 'address': ''}
+        'address', 'ownerName', 'portfolioSize']], 'address': ''}
     return render(request, 'licenses/index.html', context)
 
 
@@ -42,9 +42,9 @@ def property(request):
         }
         return render(request, 'licenses/list.html', context)
     license = licenses.loc[apn]
-    groupId = license['groupId']
-    sameOwner = licenses.loc[licenses['groupId']
-                             == groupId][['licenseNum', 'address', 'ownerName']]
+    portfolioId = license['portfolioId']
+    sameOwner = licenses.loc[licenses['portfolioId']
+                             == portfolioId][['licenseNum', 'address', 'ownerName']]
     sameOwner['violationCount'] = sameOwner['address'].apply(
         lambda address: countViolations(address))
     sameOwner = sameOwner.reset_index().sort_values(by='address')
@@ -68,7 +68,7 @@ def portfolio(request):
     elif request.method == "POST":
         portfolioId = request.POST['portfolioId']
     portfolioId = int(portfolioId)
-    sameOwner = licenses.loc[licenses['groupId']
+    sameOwner = licenses.loc[licenses['portfolioId']
                              == portfolioId][['licenseNum', 'address', 'ownerName']]
     sameOwner['violationCount'] = sameOwner['address'].apply(
         lambda address: countViolations(address))
@@ -108,13 +108,13 @@ def portfolios(request):
     elif request.method == "POST":
         name = request.POST['name']
     matchingOwnerName = licenses[licenses.ownerName.str.contains(
-        name, na=False, case=False)]
+        name, na=False, case=False, regex=True)]
     matchingApplicantName = licenses[licenses.applicantN.str.contains(
-        name, na=False, case=False)]
+        name, na=False, case=False, regex=True)]
     matches = pd.concat([matchingOwnerName, matchingApplicantName])
-    g = matches.groupby('groupId')['ownerName']
-    portfolios = [{'groupId': groupId, 'ownerNames': ", ".join(
-        list(set(group.tolist())))} for groupId, group in g]
+    g = matches.groupby('portfolioId')['ownerName']
+    portfolios = [{'portfolioId': portfolioId, 'ownerNames': ", ".join(
+        list(set(group.tolist())))} for portfolioId, group in g]
     context = {
         'portfolios': portfolios
     }

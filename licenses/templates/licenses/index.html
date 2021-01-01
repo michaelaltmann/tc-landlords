@@ -25,7 +25,7 @@ Search for a rental property by address
 Search for owners
 <form action="./portfolios" method="post">
     {% csrf_token %}
-    Name: <input name="name" value = "{{name}}"/>
+    Pattern: <input name="name" value = "{{name}}"/>
     <input type="submit" value="Search">
 </form>
 {% endblock content %}
