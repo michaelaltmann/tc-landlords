@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Property</title>
-</head>
-<body>
-<a href="/licenses">Back</a>
+{% extends 'base.html' %}
+
+{% block title %}Property Details{% endblock title %}
+
+{% block content %}
 <p>
-    <h2>Property Details</h2>
     <pre>
 {{ license }}
     </pre>
@@ -56,5 +52,4 @@
 </tbody>
 </table>
 </p>
-</body>
-</html>
+{% endblock content %}

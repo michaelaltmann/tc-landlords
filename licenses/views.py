@@ -21,7 +21,7 @@ def index(request):
     """
     context = {'licenses': licenses[[
         'address', 'ownerName', 'groupSize']], 'address': ''}
-    return render(request, 'index.html', context)
+    return render(request, 'licenses/index.html', context)
 
 
 def countViolations(address):
@@ -40,7 +40,7 @@ def property(request):
         context = {
             'message': 'No matching property'
         }
-        return render(request, 'list.html', context)
+        return render(request, 'licenses/list.html', context)
     license = licenses.loc[apn]
     groupId = license['groupId']
     sameOwner = licenses.loc[licenses['groupId']
@@ -56,7 +56,7 @@ def property(request):
                'license': license,
                'sameOwner': sameOwner.to_dict(orient='records'),
                'violations': propertyViolations.to_dict(orient='records')}
-    return render(request, 'property.html', context)
+    return render(request, 'licenses/property.html', context)
 
 
 def search(request):
@@ -74,4 +74,4 @@ def search(request):
                       ].reset_index().sort_values(by='address')
     context = {'address': address,
                'properties': matches.to_dict(orient='records')}
-    return render(request, 'list.html', context)
+    return render(request, 'licenses/list.html', context)
