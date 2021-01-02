@@ -3,21 +3,21 @@
 {% block title %}Portfolios{% endblock title %}
 {% block content %}
 
-<table>
-    <thead>
-        <td>Portfolio</td>
-        <td>Owners</td>
-        <td>Applicants</td>
+<table class = "table">
+    <thead class="thead-dark">
+        <th>Portfolio</th>
+        <th>Owners</th>
+        <th>Applicants</th>
     </thead>
     <tbody>
 {% for x in portfolios %}
-<tr>
-    <td><a href="portfolio?portfolioId={{x.portfolioId}}" >{{x.portfolioId }}</a></td>
-    <td>{{x.ownerNames}}</td>
-    <td>{{x.applicantNames}}</td>
-</tr>
+        <tr>
+            <td><a href="portfolio?portfolioId={{x.portfolioId}}" >{{x.portfolioId }}</a></td>
+            <td>{{x.ownerNames}}</td>
+            <td>{{x.applicantNames}}</td>
+        </tr>
 {% endfor %}
-</tbody>
+    </tbody>
 </table>
 {% endblock content %}
 

@@ -8,24 +8,34 @@ A sample of license data
     {{ licenses }}
 </pre>
 
-Get information for an APN
+Find rental property by APN
 <form action="./property" method="post">
-    {% csrf_token %}
-    APN: <input name="apn"/>
-    <input type="submit" value="Search">
+    <div class="form-group col-4">
+        {% csrf_token %}
+        <label for="apn">APN</label>
+        <input name="apn" />
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
 </form>
 
-Search for a rental property by address
+Find rental properties by address
 <form action="./search" method="post">
-    {% csrf_token %}
-    Address: <input name="address" value = "{{address}}"/>
-    <input type="submit" value="Search">
+    <div class="form-group col-4">
+        {% csrf_token %}
+        <label for="address">Address</label>
+        <input name="address" value = "{{address}}"/>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
 </form>
 
-Search for owners
+Find landlords
 <form action="./portfolios" method="post">
-    {% csrf_token %}
-    Pattern: <input name="name" value = "{{name}}"/>
-    <input type="submit" value="Search">
+    <div class="form-group col-4">
+        {% csrf_token %}
+        <label for="name">Pattern</label>
+        <input name="name" value = "{{name}}"/>
+        <small id="name" class="form-text text-muted">Enter a regex pattern for owner and applicant name</small>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
 </form>
 {% endblock content %}

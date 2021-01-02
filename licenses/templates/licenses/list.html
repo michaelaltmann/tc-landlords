@@ -5,12 +5,12 @@
 {% if message %}
     <h4>{{message}}</h4>
 {% else %}
-<table>
-    <thead>
-        <td>APN</td>
-        <td>License</td>
-        <td>Address</td>
-        <td>Owner</td>
+<table class="table">
+    <thead class="thead-dark">
+        <th>APN</th>
+        <th>License</th>
+        <th>Address</th>
+        <th>Owner</th>
     </thead>
     <tbody>
 {% for prop in properties %}
@@ -35,13 +35,13 @@ Search for a rental property by address
 <form action="./search" method="post">
     {% csrf_token %}
     Address: <input name="address" value = "{{address}}"/>
-    <input type="submit" value="Search">
+    <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
 Search for owners
 <form action="./portfolios" method="post">
     {% csrf_token %}
     Pattern: <input name="name" value = "{{name}}"/>
-    <input type="submit" value="Search">
+    <button type="submit" class="btn btn-primary">Search</button>
 </form>
 {% endblock content %}

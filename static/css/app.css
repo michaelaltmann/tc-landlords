@@ -89,3 +89,9 @@ body {
   padding: 10px;
   width: 100%;
 }
+.nav {
+  background: black;
+}
+.nav-link {
+  color: beige;
+}

@@ -4,27 +4,27 @@
 
 {% block content %}
 
-<p>
+
 <h2>Licenses for Portfolio {{portfolioId}}</h2>
-<table>
-    <thead>
-        <td>APN</td>
-        <td>License</td>
-        <td>Address</td>
-        <td>Owner</td>
-        <td>Violations</td>
+<table class="table">
+    <thead class="thead-dark">
+        <th>APN</th>
+        <th>License</th>
+        <th>Address</td>
+        <th>Owner</th>
+        <th>Violations</th>
     </thead>
     <tbody>
 {% for prop in sameOwner %}
-<tr>
-    <td><a href="property?apn={{prop.apn}}" >{{prop.apn }}</a></td>
-    <td>{{prop.licenseNum }}</td>
-    <td>{{prop.address }}</td>
-    <td>{{prop.ownerName }}</td>
-    <td>{{prop.violationCount }}</td>
-</tr>
-{% endfor %}
-</tbody>
+    <tr>
+        <td><a href="property?apn={{prop.apn}}" >{{prop.apn }}</a></td>
+        <td>{{prop.licenseNum }}</td>
+        <td>{{prop.address }}</td>
+        <td>{{prop.ownerName }}</td>
+        <td>{{prop.violationCount }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
 </table>
-</p>
+
 {% endblock content %}

@@ -10,12 +10,12 @@
 </p>
 
 <h2>Violations</h2>
-<table>
-    <thead>
-        <td>Date</td>
-        <td>Case No.</td>
-        <td>Grouping</td>
-        <td>Description</td>
+<table class="table">
+    <thead class="thead-dark">
+        <th>Date</th>
+        <th>Case No.</th>
+        <th>Grouping</th>
+        <th>Description</th>
     </thead>
     <tbody>
 {% for violation in violations %}
@@ -31,13 +31,13 @@
 
 <p>
 <h2>Rental Properties in this Portfolio</h2>
-<table>
-    <thead>
-        <td>APN</td>
-        <td>License</td>
-        <td>Address</td>
-        <td>Owner</td>
-        <td>Violations</td>
+<table class="table">
+    <thead class="thead-dark">
+        <th>APN</th>
+        <th>License</th>
+        <th>Address</th>
+        <th>Owner</th>
+        <th>Violations</th>
     </thead>
     <tbody>
 {% for prop in sameOwner %}
