@@ -101,26 +101,38 @@ def search(request):
 
 def portfolios(request):
     """
-    Find portfolios by owner name
+    Find portfolios by owner name, or diplay largest
     """
     if request.method == "GET":
-        name = request.GET['name']
+        name = request.GET.get('name', "")
     elif request.method == "POST":
-        name = request.POST['name']
-    matchingOwnerName = licenses[licenses.ownerName.str.contains(
-        name, na=False, case=False, regex=True)]
-    matchingApplicantName = licenses[licenses.applicantN.str.contains(
-        name, na=False, case=False, regex=True)]
-    matches = pd.concat([matchingOwnerName, matchingApplicantName])
-    g = matches.groupby('portfolioId')['ownerName', 'applicantN']
+        name = request.POST.get('name', "")
+    if name:
+        matchingOwnerName = licenses[licenses.ownerName.str.contains(
+            name, na=False, case=False, regex=True)]
+        matchingApplicantName = licenses[licenses.applicantN.str.contains(
+            name, na=False, case=False, regex=True)]
+        matches = pd.concat([matchingOwnerName, matchingApplicantName])
+        message = f"Portfolios matching {name}"
+    else:
+        largestPortfolios = licenses[['portfolioId', 'portfolioSize']].drop_duplicates(
+        ).nlargest(10, 'portfolioSize')[['portfolioId']]
+        matches = licenses.join(largestPortfolios.set_index(
+            'portfolioId'), on='portfolioId', how='inner', rsuffix='top_')
+        message = f"Largest Portfolios"
+
+    g = matches.groupby('portfolioId')[
+        'ownerName', 'applicantN', 'portfolioSize']
     portfolios = [{
         'portfolioId': portfolioId,
+        'portfolioSize': group['portfolioSize'].iloc[0],
         'ownerNames': "; ".join(
             list(set(group['ownerName'].tolist()))),
         'applicantNames': "; ".join(
             list(set(group['applicantN'].tolist()))),
     } for portfolioId, group in g]
     context = {
+        'message': message,
         'portfolios': portfolios
     }
     return render(request, 'licenses/portfolios.html', context)

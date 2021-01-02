@@ -2,10 +2,11 @@
 
 {% block title %}Portfolios{% endblock title %}
 {% block content %}
-
+<h3>{{message}}</h3>
 <table class = "table">
     <thead class="thead-dark">
         <th>Portfolio</th>
+        <th>Size</th>
         <th>Owners</th>
         <th>Applicants</th>
     </thead>
@@ -13,11 +14,23 @@
 {% for x in portfolios %}
         <tr>
             <td><a href="portfolio?portfolioId={{x.portfolioId}}" >{{x.portfolioId }}</a></td>
+            <td>{{x.portfolioSize}}</td>
             <td>{{x.ownerNames}}</td>
             <td>{{x.applicantNames}}</td>
         </tr>
 {% endfor %}
     </tbody>
 </table>
+
+Find landlords
+<form action="./portfolios" method="post">
+    <div class="form-group col-4">
+        {% csrf_token %}
+        <label for="name">Pattern</label>
+        <input name="name" value = "{{name}}"/>
+        <small id="name" class="form-text text-muted">Enter a regex pattern for owner and applicant name</small>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
 {% endblock content %}
 
