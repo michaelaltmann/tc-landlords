@@ -2,17 +2,33 @@
 {% block title %}Twin Cities Landlord App{% endblock title %}
 
 {% block content %} 
+<h3>The Problem</h3>
 <p>
 Are you considering renting, but  want to check out a landlord?  
 Having trouble with your landlord and want to find other properties and tenants
 with the same landlord?
+It can be difficult to identify all the properties owned by a landlord because
+ownership may be masked by corporation and the many spellings and mis-spellings of an
+owner's name.
+This site does its best to pull together all properties that are actually
+owned by the same entity and treats them as a single portfolio.
 </p>
 
-<p>It can be difficult to identify all the properties owned by a landlord because
-ownership may be masked by corporation and varying spellings.
-</p>
+<h3>The Solution</h3>
 <p>
-This site does its best to pull together all properties that are actually
-owned by the same entity, which we call a portfolio.
+    Currently, this site is a mashup of two datasets.  
+    The Minneapolis Rental License <a href="https://opendata.minneapolismn.gov/datasets/active-rental-licenses">dataset</a> is our source of information about ownership.  It is better
+    that the property tax data because it includes owner email and phone number.  After cleaning up
+    owner name, address, email and phone number, we join together owners that match on one of these 
+    fields.
+
+    Minneapolis Regulatory Services provided the data about 
+    <a href="https://tableau.minneapolismn.gov/views/OpenDataRegulatoryServices-Violations/Introduction">violations</a>.  This was exported from the Tableau
+    interface. We had to do one precinct at a time because of Tableau limitations.
+
+    After the raw data were downloaded as csv files, they are brought into Python using the Pandas
+    package and then exposed as a Django web application hosted on <a href="https://tc-landlords.azurewebsites.net">Azure</a>
+
+    The source is available on <a href="https://github.com/michaelaltmann/tc-landlords">Github</a>
 </p>
 {% endblock content %} 
