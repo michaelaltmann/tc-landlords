@@ -23,8 +23,8 @@
         {% endblock head_meta %}
         {% block head_css %}
             {% block head_css_site %}
-            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
             <link href="{% static 'css/app.css' %}" rel="stylesheet" media="screen">
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
             {% endblock head_css_site %}
             {% block head_css_section %}{% endblock head_css_section %}
             {% block head_css_page %}{% endblock head_css_page %}
@@ -35,7 +35,8 @@
         {# Navigation Menu #}
         <header>
             <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
-                <h5 class="my-0 mr-md-auto font-weight-normal">TC Landlords</h5>
+                <img src="{% static 'images/favicon-32x32.png' %}" width="30" hight="30">
+                <h5 class="my-0 mr-md-auto font-weight-normal">Twin Cities Landlords</h5>
                 <nav class="my-2 my-md-0 mr-md-3">
                   <a class="p-2 text-dark" href="/">Home</a>
                   <a class="p-2 text-dark" href="/licenses">Licenses</a>
@@ -52,7 +53,7 @@
         {# The Footer #}
         <div class="footer">
             <div class="container">
-                <p>Copyright Michael Altmann 2020</p>
+                <p>Copyright &copy; 2020 Michael Altmann</p>
             </div>
         </div>
     </body>

@@ -95,3 +95,10 @@ body {
 .nav-link {
   color: beige;
 }
+th {
+  background-color: rgb(10, 10, 160);
+  color: white;
+}
+.footer {
+  background-color: slategrey;
+}

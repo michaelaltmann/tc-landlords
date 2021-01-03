@@ -16,10 +16,15 @@ owned by the same entity and treats them as a single portfolio.
 
 <h3>The Solution</h3>
 <p>
+    This site grew out of a Twinc Cities Open Data 
+    <a href="https://docs.google.com/presentation/d/16-dNwFRlmQ5ZBFG5AjBvvWU-k1jf1Q43mvD2nXVlydE/edit#slide=id.p">
+    project proposal</a>.
+
     Currently, this site is a mashup of two datasets.  
-    The Minneapolis Rental License <a href="https://opendata.minneapolismn.gov/datasets/active-rental-licenses">dataset</a> is our source of information about ownership.  It is better
-    that the property tax data because it includes owner email and phone number.  After cleaning up
-    owner name, address, email and phone number, we join together owners that match on one of these 
+    The Minneapolis Rental License <a href="https://opendata.minneapolismn.gov/datasets/active-rental-licenses">dataset</a> is our 
+    source of information about ownership of rental properties.  It is better
+    than the property tax data because it includes owner email and phone number.  After cleaning up
+    owner name, address, email, and phone number, we join together owners that match on any one of these 
     fields.
 
     Minneapolis Regulatory Services provided the data about 
@@ -30,5 +35,6 @@ owned by the same entity and treats them as a single portfolio.
     package and then exposed as a Django web application hosted on <a href="https://tc-landlords.azurewebsites.net">Azure</a>
 
     The source is available on <a href="https://github.com/michaelaltmann/tc-landlords">Github</a>
+
 </p>
 {% endblock content %} 
