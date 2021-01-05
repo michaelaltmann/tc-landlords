@@ -2,9 +2,7 @@
 
 {% block title %}Rental Properties{% endblock title %}
 {% block content %}
-{% if message %}
-    <h4>{{message}}</h4>
-{% else %}
+{% if properties and not properties.empty %}
 <table class="table">
     <thead>
         <th>APN</th>
@@ -23,6 +21,8 @@
 {% endfor %}
 </tbody>
 </table>
+{% else %}
+<h4>No matching rental properties</h4>
 {% endif %}
 Get information for an APN
 <form action="./property" method="post">

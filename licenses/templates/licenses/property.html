@@ -3,54 +3,58 @@
 {% block title %}License Details{% endblock title %}
 
 {% block content %}
-<p>
-    <h3>License Details</h3>
-    <pre>
+{% if license is not None %}
+    <p>
+        <h3>License Details for {{apn}}</h3>
+        <pre>
 {{ license }}
-    </pre>
-</p>
+        </pre>
+    </p>
 
-<h3>Violations</h3>
-<table class="table-sm">
-    <thead>
-        <th>Date</th>
-        <th>Case No.</th>
-        <th>Grouping</th>
-        <th>Description</th>
-    </thead>
-    <tbody>
-{% for violation in violations %}
-<tr>
-    <td>{{violation.violationDate }}</td>
-    <td>{{violation.caseNumber }}</td>
-    <td>{{violation.grouping }}</td>
-    <td>{{violation.description }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+    <h3>Violations</h3>
+    <table class="table-sm">
+        <thead>
+            <th>Date</th>
+            <th>Case No.</th>
+            <th>Grouping</th>
+            <th>Description</th>
+        </thead>
+        <tbody>
+    {% for violation in violations %}
+    <tr>
+        <td>{{violation.violationDate }}</td>
+        <td>{{violation.caseNumber }}</td>
+        <td>{{violation.grouping }}</td>
+        <td>{{violation.description }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
 
-<p>
-<h3>Rental Properties in this Portfolio</h3>
-<table class="table">
-    <thead>
-        <th>APN</th>
-        <th>License</th>
-        <th>Address</th>
-        <th>Owner</th>
-        <th>Violations</th>
-    </thead>
-    <tbody>
-{% for prop in sameOwner %}
-<tr>
-    <td><a href="property?apn={{prop.apn}}" >{{prop.apn }}</a></td>
-    <td>{{prop.licenseNum }}</td>
-    <td>{{prop.address }}</td>
-    <td>{{prop.ownerName }}</td>
-    <td>{{prop.violationCount }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-</p>
+    <p>
+    <h3>Rental Properties in this Portfolio</h3>
+    <table class="table">
+        <thead>
+            <th>APN</th>
+            <th>License</th>
+            <th>Address</th>
+            <th>Owner</th>
+            <th>Violations</th>
+        </thead>
+        <tbody>
+    {% for prop in sameOwner %}
+    <tr>
+        <td><a href="property?apn={{prop.apn}}" >{{prop.apn }}</a></td>
+        <td>{{prop.licenseNum }}</td>
+        <td>{{prop.address }}</td>
+        <td>{{prop.ownerName }}</td>
+        <td>{{prop.violationCount }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    </p>
+{% else %}
+    <h4>No Rental license for {{apn}}</h4>
+{% endif %}
 {% endblock content %}

@@ -3,7 +3,6 @@ from django.shortcuts import render
 from violations.violations import Violations
 
 v = Violations()
-v.load()
 
 # Create your views here.
 

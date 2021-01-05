@@ -5,17 +5,18 @@ import pandas as pd
 from django.http import HttpResponse
 from .transform import cleanAddressLine
 from violations.violations import Violations
+import time
 
 v = Violations()
-v.load()
 violations = v.violations
-print(violations)
-print(v.countByAddress)
+countByAddress = v.countByAddress
 
-# Create your views here.
 print('** Loading licenses **')
+tic = time.perf_counter()
 licenses = pd.read_csv('licenses/clean_grouped_rental_licenses.csv', index_col=0,
                        low_memory=False)
+toc = time.perf_counter()
+print(f"Loaded licenses in {toc - tic:0.4f} seconds")
 
 
 def index(request):
@@ -28,8 +29,8 @@ def index(request):
 
 
 def countViolations(address):
-    if address in v.countByAddress.index:
-        row = v.countByAddress.loc[address]
+    if address in countByAddress.index:
+        row = countByAddress.loc[address]
         return row['violationCount']
     else:
         return 0
@@ -45,7 +46,7 @@ def property(request):
         apn = request.POST['apn']
     if not apn in licenses.index:
         context = {
-            'message': 'No matching rental license'
+
         }
         return render(request, 'licenses/list.html', context)
     license = licenses.loc[apn]
@@ -98,10 +99,8 @@ def search(request):
         address = request.POST['address']
     matches = licenses[licenses.address.str.contains(
         address, na=False, case=False)]
-    print(f"matches: {len(matches.index)}")
     if len(matches.index) == 1:
         apn = matches.iloc[0].name
-        print(f"Redirect to apn {apn}")
         return redirect(f"/licenses/property?apn={apn}")
     else:
         matches = matches[['licenseNum', 'address', 'ownerName']
