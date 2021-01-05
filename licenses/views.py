@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.shortcuts import redirect
+
 import pandas as pd
 from django.http import HttpResponse
 from .transform import cleanAddressLine
@@ -8,6 +10,7 @@ v = Violations()
 v.load()
 violations = v.violations
 print(violations)
+print(v.countByAddress)
 
 # Create your views here.
 print('** Loading licenses **')
@@ -25,7 +28,11 @@ def index(request):
 
 
 def countViolations(address):
-    return len(violations[violations.address == address].index)
+    if address in v.countByAddress.index:
+        row = v.countByAddress.loc[address]
+        return row['violationCount']
+    else:
+        return 0
 
 
 def property(request):
@@ -50,7 +57,6 @@ def property(request):
     sameOwner = sameOwner.reset_index().sort_values(by='address')
     propertyViolations = violations[violations.address ==
                                     license['address']].sort_values(by='violationDate', ascending=False)
-    print(f"Violations:\n{propertyViolations}")
     context = {'licenses': licenses,
                'apn': apn,
                'license': license,
@@ -92,11 +98,17 @@ def search(request):
         address = request.POST['address']
     matches = licenses[licenses.address.str.contains(
         address, na=False, case=False)]
-    matches = matches[['licenseNum', 'address', 'ownerName']
-                      ].reset_index().sort_values(by='address')
-    context = {'address': address,
-               'properties': matches.to_dict(orient='records')}
-    return render(request, 'licenses/list.html', context)
+    print(f"matches: {len(matches.index)}")
+    if len(matches.index) == 1:
+        apn = matches.iloc[0].name
+        print(f"Redirect to apn {apn}")
+        return redirect(f"/licenses/property?apn={apn}")
+    else:
+        matches = matches[['licenseNum', 'address', 'ownerName']
+                          ].reset_index().sort_values(by='address')
+        context = {'address': address,
+                   'properties': matches.to_dict(orient='records')}
+        return render(request, 'licenses/list.html', context)
 
 
 def portfolios(request):

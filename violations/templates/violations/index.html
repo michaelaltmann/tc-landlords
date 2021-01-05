@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}License Details{% endblock title %}
+
+{% block content %}
+
+<p>
+<h3>Properties with Most Violations</h3>
+<table class="table">
+    <thead>
+        <th>Address</th>
+        <th>Violations</th>
+    </thead>
+    <tbody>
+{% for address in addresses %}
+<tr>
+    <td><a href="{% url 'search'%}?address={{address.address | urlencode }}" >{{address.address }}</a></td>
+    <td>{{address.violationCount }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</p>
+{% endblock content %}

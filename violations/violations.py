@@ -16,11 +16,13 @@ class Violations:
         df['violationDate'] = pd.to_datetime(
             df['violationDateStr'], format="%m/%d/%Y", errors='coerce').dt.strftime('%Y-%m-%d')
         self.violations = df
+        self.countByAddress = df[['address']].groupby(
+            'address').size().reset_index(name='violationCount').set_index('address')
 
 
 if __name__ == "__main__":
     # execute only if run as a script
     v = Violations()
     v.load()
-    df = v.violations
-    print(df)
+    print(v.violations)
+    print(v.countByAddress)
