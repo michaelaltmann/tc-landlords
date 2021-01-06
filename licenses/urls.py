@@ -7,5 +7,6 @@ urlpatterns = [
     path('/property', views.property, name="property"),
     path('/search', views.search, name="search"),
     path('/portfolios', views.portfolios),
+    path('/portfolio_search', views.portfolio_search),
     path('/portfolio', views.portfolio),
 ]

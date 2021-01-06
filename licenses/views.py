@@ -110,7 +110,7 @@ def search(request):
         return render(request, 'licenses/list.html', context)
 
 
-def portfolios(request):
+def portfolio_search(request):
     """
     Find portfolios by owner name, or diplay largest
     """
@@ -126,24 +126,48 @@ def portfolios(request):
         matches = pd.concat([matchingOwnerName, matchingApplicantName])
         message = f"Portfolios matching {name}"
     else:
-        largestPortfolios = licenses[['portfolioId', 'portfolioSize']].drop_duplicates(
-        ).nlargest(10, 'portfolioSize')[['portfolioId']]
-        matches = licenses.join(largestPortfolios.set_index(
-            'portfolioId'), on='portfolioId', how='inner', rsuffix='top_')
-        message = f"Largest Portfolios"
+        return redirect(f"/licenses/portfolios")
 
-    g = matches.groupby('portfolioId')[
-        'ownerName', 'applicantN', 'portfolioSize']
-    portfolios = [{
-        'portfolioId': portfolioId,
-        'portfolioSize': group['portfolioSize'].iloc[0],
-        'ownerNames': "; ".join(
-            list(set(group['ownerName'].tolist()))),
-        'applicantNames': "; ".join(
-            list(set(group['applicantN'].tolist()))),
-    } for portfolioId, group in g]
+    portfolios = matches.groupby('portfolioId')[[
+        'ownerName', 'applicantN', 'portfolioSize']].agg({
+            'portfolioSize': min,
+            'ownerName': lambda s: '; '.join(list(set(s.dropna()))),
+            'applicantN': lambda s: '; '.join(list(set(s.dropna()))),
+        }).reset_index().rename(columns={"ownerName": "ownerNames", "applicantN": "applicantNames"})
+
     context = {
-        'message': message,
-        'portfolios': portfolios
+        'name': name,
+        'portfolios': portfolios.to_dict(orient='records')
+    }
+    return render(request, 'licenses/portfolio_search.html', context)
+
+
+allPortfolios = None
+
+
+def getAllPortfolios():
+    global allPortfolios
+    if allPortfolios == None:
+        portfolios = licenses.groupby('portfolioId')[[
+            'ownerName', 'applicantN', 'portfolioSize']].agg({
+                'portfolioSize': min,
+                'ownerName': lambda s: '; '.join(list(set(s.dropna()))),
+                'applicantN': lambda s: '; '.join(list(set(s.dropna()))),
+            })
+        portfolios = portfolios.sort_values(
+            by='portfolioSize', ascending=False)
+        allPortfolios = portfolios.reset_index().rename(
+            columns={"ownerName": "ownerNames", "applicantN": "applicantNames"})
+        print(f"AllPortfolios\n{allPortfolios}")
+    return allPortfolios
+
+
+def portfolios(request):
+    """
+    Display all portfolios
+    """
+    portfolios = getAllPortfolios()
+    context = {
+        'portfolios': portfolios.to_dict(orient='records')
     }
     return render(request, 'licenses/portfolios.html', context)

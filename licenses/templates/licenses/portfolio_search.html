@@ -2,18 +2,7 @@
 
 {% block title %}Portfolios{% endblock title %}
 {% block content %}
-Find landlords
-<form action="./portfolio_search" method="post">
-    <div class="form-group col-4">
-        {% csrf_token %}
-        <label for="name">Pattern</label>
-        <input name="name" value = "{{name}}"/>
-        <small id="name" class="form-text text-muted">Enter a regex pattern for owner and applicant name</small>
-        <button type="submit" class="btn btn-primary">Search</button>
-    </div>
-</form>
-
-<h3>Portfolios</h3>
+<h3>Portfolios matching <code>{{name}}</code></h3>
 <table class = "table">
     <thead>
         <th>Portfolio</th>
@@ -33,6 +22,15 @@ Find landlords
     </tbody>
 </table>
 
-
+Find landlords
+<form action="./portfolio_search" method="post">
+    <div class="form-group col-4">
+        {% csrf_token %}
+        <label for="name">Pattern</label>
+        <input name="name" value = "{{name}}"/>
+        <small id="name" class="form-text text-muted">Enter a regex pattern for owner and applicant name</small>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
 {% endblock content %}
 
