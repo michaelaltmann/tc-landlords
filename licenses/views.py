@@ -52,7 +52,7 @@ def property(request):
     license = licenses.loc[apn]
     portfolioId = license['portfolioId']
     sameOwner = licenses.loc[licenses['portfolioId']
-                             == portfolioId][['licenseNum', 'address', 'ownerName']]
+                             == portfolioId][['licenseNum', 'tier', 'address', 'ownerName']]
     sameOwner['violationCount'] = sameOwner['address'].apply(
         lambda address: countViolations(address))
     sameOwner = sameOwner.reset_index().sort_values(by='address')
