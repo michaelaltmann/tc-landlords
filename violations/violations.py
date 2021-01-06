@@ -38,10 +38,3 @@ class Violations:
                 'address').size().reset_index(name='violationCount').set_index('address')
             toc = time.perf_counter()
             print(f"Counted violations by address in {toc - tic:0.4f} seconds")
-
-
-if __name__ == "__main__":
-    # execute only if run as a script
-    v = Violations()
-    print(v.violations)
-    print(v.countByAddress)
