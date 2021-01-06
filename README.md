@@ -19,6 +19,12 @@ The file licenses-raw.csv is a direct export of the licence data from this shape
 Then `transform.py` was used locally to clean the data, create columns for the owners phone, email, name and address in a standard format. These columns are called xPhone, xEmail, xName and xAddress. Once this was done, the Union-Find algorithm was used to efficiently group records that matched on any of these fields. The reuslting data are written back to
 `clean_grouped_rental_licenses.csv`, which is deployed as part of the Django app.
 
+To generate a fresh version of `clean_grouped_rental_licenses.csv`, run
+
+```
+python clean_rental_licenses
+```
+
 The is a very simple Django app that allows you to find all properties that are owned by the same landlord as a given property.
 
 ## Changes to Django settings
