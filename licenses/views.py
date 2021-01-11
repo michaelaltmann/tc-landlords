@@ -4,31 +4,16 @@ from django.shortcuts import redirect
 import pandas as pd
 from django.http import HttpResponse
 from .transform import cleanAddressLine
-from violations.violations import Violations
+from violations.violation_data import ViolationData
 import time
+from .license_data import LicenseData
 
-v = Violations()
-violations = v.violations
-countByAddress = v.countByAddress
-
-print('** Loading licenses **')
-tic = time.perf_counter()
-licenses = pd.read_csv('licenses/clean_grouped_rental_licenses.csv', index_col=0,
-                       low_memory=False)
-toc = time.perf_counter()
-print(f"Loaded licenses in {toc - tic:0.4f} seconds")
-
-
-def index(request):
-    """
-    Home page for rental licenses
-    """
-    context = {'licenses': licenses[[
-        'address', 'ownerName', 'portfolioSize']], 'address': ''}
-    return render(request, 'licenses/index.html', context)
+licenseData = LicenseData()
+violationData = ViolationData()
 
 
 def countViolations(address):
+    countByAddress = violationData.countByAddress
     if address in countByAddress.index:
         row = countByAddress.loc[address]
         return row['violationCount']
@@ -36,15 +21,27 @@ def countViolations(address):
         return 0
 
 
+def index(request):
+    """
+    Home page for rental licenses
+    """
+    licenses = licenseData.licenses
+    context = {'licenses': licenses[[
+        'address', 'ownerName', 'portfolioSize']], 'address': ''}
+    return render(request, 'licenses/index.html', context)
+
+
 def property(request):
     """
     Display info about one property
     """
+    licenses = licenseData.licenses
+    violations = violationData.violations
     if request.method == "GET":
         apn = request.GET['apn']
     elif request.method == "POST":
         apn = request.POST['apn']
-    if not apn in licenses.index:
+    if not apn in licenseData.licenses.index:
         context = {
 
         }
@@ -70,6 +67,7 @@ def portfolio(request):
     """
     Display all the properties for one portfolio
     """
+    licenses = licenseData.licenses
     if request.method == "GET":
         portfolioId = request.GET['portfolioId']
     elif request.method == "POST":
@@ -93,6 +91,7 @@ def search(request):
     """
     Display a list of properties that match search criteria
     """
+    licenses = licenseData.licenses
     if request.method == "GET":
         address = request.GET['address']
     elif request.method == "POST":
@@ -114,6 +113,7 @@ def portfolio_search(request):
     """
     Find portfolios by owner name, or diplay largest
     """
+    licenses = licenseData.licenses
     if request.method == "GET":
         name = request.GET.get('name', "")
     elif request.method == "POST":
@@ -142,31 +142,11 @@ def portfolio_search(request):
     return render(request, 'licenses/portfolio_search.html', context)
 
 
-allPortfolios = None
-
-
-def getAllPortfolios():
-    global allPortfolios
-    if allPortfolios == None:
-        portfolios = licenses.groupby('portfolioId')[[
-            'ownerName', 'applicantN', 'portfolioSize']].agg({
-                'portfolioSize': min,
-                'ownerName': lambda s: '; '.join(list(set(s.dropna()))),
-                'applicantN': lambda s: '; '.join(list(set(s.dropna()))),
-            })
-        portfolios = portfolios.sort_values(
-            by='portfolioSize', ascending=False)
-        allPortfolios = portfolios.reset_index().rename(
-            columns={"ownerName": "ownerNames", "applicantN": "applicantNames"})
-        print(f"AllPortfolios\n{allPortfolios}")
-    return allPortfolios
-
-
 def portfolios(request):
     """
     Display all portfolios
     """
-    portfolios = getAllPortfolios()
+    portfolios = licenseData.allPortfolios
     context = {
         'portfolios': portfolios.to_dict(orient='records')
     }

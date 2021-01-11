@@ -2,21 +2,36 @@ import pandas as pd
 import time
 
 
-class Violations:
+class ViolationData:
     singleton = None
 
     def __init__(self):
-        if not Violations.singleton:
-            Violations.singleton = Violations.__Violations()
+        if not ViolationData.singleton:
+            ViolationData.singleton = ViolationData.__ViolationData()
 
     def __getattr__(self, name):
         return getattr(self.singleton, name)
 
-    class __Violations:
+    class __ViolationData:
         def __init__(self):
-            self.load()
+            self._violations = None
+            self._countByAddress = None
 
-        def load(self):
+        @property
+        def violations(self):
+            if self._violations is None:
+                print("self._violations is None")
+                self._violations = self.getViolations()
+            return self._violations
+
+        @property
+        def countByAddress(self):
+            if self._countByAddress is None:
+                print("self._countByAddress is None")
+                self._countByAddress = self.getCountByAddress()
+            return self._countByAddress
+
+        def getViolations(self):
             all_files = [f"violations/ward{n}.csv" for n in range(1, 14)]
             print(f"Loading {all_files}")
             # Address	Tier	Case Number	Violation Code	Violation Code Description	Violation Grouping	Violation Resolved?	Violator Name   	Violator Name	Violation Date
@@ -31,10 +46,12 @@ class Violations:
                 df['violationDateStr'], format="%m/%d/%Y", errors='coerce').dt.strftime('%Y-%m-%d')
             toc = time.perf_counter()
             print(f"Loaded violations in {toc - tic:0.4f} seconds")
+            return df
 
-            self.violations = df
+        def getCountByAddress(self):
             tic = time.perf_counter()
-            self.countByAddress = df[['address']].groupby(
+            countByAddress = self.violations[['address']].groupby(
                 'address').size().reset_index(name='violationCount').set_index('address')
             toc = time.perf_counter()
             print(f"Counted violations by address in {toc - tic:0.4f} seconds")
+            return countByAddress
