@@ -1,0 +1,53 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Portfolio {% endblock title %}
+
+{% block content %}
+<H3>Map View for Portfolio {{portfolioId}}</H3>
+   <div id='map' width="500px" style='height:700px'></div>
+   <script>
+    mapboxgl.accessToken = '{{ mapbox_access_token }}';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
+        center: [-93.28416931340604,44.97], // starting position [lng, lat]
+        zoom: 11 // starting zoom
+    });
+
+    var geojson = {
+type: 'FeatureCollection',
+features: [
+{% for place in properties %}
+    {
+    type: 'Feature',
+    geometry: {
+        type: 'Point',
+        coordinates: [{{ place.longitude }}, {{ place.latitude }}]
+    },
+    properties: {
+        title: '{{ place.address }}',
+        description: '{{ place.ownerName }}'
+    }
+    },
+{% endfor %}
+]
+};
+
+    geojson.features.forEach(function(marker) {
+
+    // create a HTML element for each feature
+    var el = document.createElement('div');
+    el.className = 'marker-green';
+
+    // make a marker for each feature and add to the map
+    new mapboxgl.Marker(el)
+    .setLngLat(marker.geometry.coordinates)
+    .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
+    .setHTML('<h5>' + marker.properties.title + '</h5><p>' + marker.properties.description + '</p>'))
+    .addTo(map);
+    });
+</script>
+
+<a href="portfolio?portfolioId={{portfolioId}}">Detail View</a>
+{% endblock content %}

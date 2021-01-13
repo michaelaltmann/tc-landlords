@@ -58,6 +58,7 @@ def property(request):
     context = {'licenses': licenses,
                'apn': apn,
                'license': license,
+               'portfolioId': portfolioId,
                'sameOwner': sameOwner.to_dict(orient='records'),
                'violations': propertyViolations.to_dict(orient='records')}
     return render(request, 'licenses/property.html', context)
@@ -151,3 +152,21 @@ def portfolios(request):
         'portfolios': portfolios.to_dict(orient='records')
     }
     return render(request, 'licenses/portfolios.html', context)
+
+
+def map(request):
+    licenses = licenseData.licenses
+    if request.method == "GET":
+        portfolioId = request.GET['portfolioId']
+    elif request.method == "POST":
+        portfolioId = request.POST['portfolioId']
+    portfolioId = int(portfolioId)
+
+    sameOwner = licenses.loc[licenses['portfolioId']
+                             == portfolioId][['licenseNum', 'address', 'ownerName', 'latitude', 'longitude']]
+    context = {
+        'portfolioId': portfolioId,
+        'mapbox_access_token': 'pk.eyJ1IjoibWFsdG1hbm4iLCJhIjoiQjgzZTEyNCJ9.0_UJWIO6Up0HkMQajYj6Ew',
+        'properties': sameOwner.to_dict(orient='records')
+    }
+    return render(request, 'licenses/map.html', context)

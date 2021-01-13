@@ -9,4 +9,5 @@ urlpatterns = [
     path('/portfolios', views.portfolios),
     path('/portfolio_search', views.portfolio_search),
     path('/portfolio', views.portfolio),
+    path('/map', views.map),
 ]

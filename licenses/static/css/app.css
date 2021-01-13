@@ -102,3 +102,11 @@ th {
 .footer {
   background-color: slategrey;
 }
+.marker-green {
+  background-image: url(../images/green_pin.png);
+  background-size: cover;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  cursor: pointer;
+}
