@@ -115,3 +115,16 @@ th {
   height: 36px;
   background: rgba(255, 255, 255, 0.8);
 }
+
+.loader {
+  margin: -10px 0 0 -250px;
+  height: 60px;
+  width: 60px;
+  position: fixed;
+  text-align: center;
+  padding: 1em;
+  top: 50%;
+  left: 50%;
+  margin: 0 auto 1em;
+  z-index: 9999;
+}

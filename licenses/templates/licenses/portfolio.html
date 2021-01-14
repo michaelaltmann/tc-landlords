@@ -5,7 +5,10 @@
 {% block content %}
 
 
-<h3>Licenses for Portfolio {{portfolioId}}</h3>
+<h3>Portfolio {{portfolioId}}</h3>
+<a href="map?portfolioId={{portfolioId}}">Map View</a>
+ | <span>Detail View</span> 
+
 <table class="table">
     <thead>
         <th>APN</th>
@@ -26,6 +29,5 @@
     {% endfor %}
     </tbody>
 </table>
-<a href="map?portfolioId={{portfolioId}}">Map view</a>
 
 {% endblock content %}
