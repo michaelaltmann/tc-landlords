@@ -16,9 +16,11 @@
         zoom: 11 // starting zoom
     });
     map.on('load', function() {
+        var selectedFeatureId = null;
         map.addSource('portfolio', {
             type: 'geojson',
-            data: '/api/portfolio?portfolioId={{portfolioId}}'
+            data: '/api/portfolio?portfolioId={{portfolioId}}',
+            'generateId': true 
             });
 
         map.addLayer({
@@ -29,29 +31,38 @@
                 'circle-radius': 6,
                 'circle-stroke-color': 'black',
                 'circle-stroke-width': 1,
-                'circle-color': 'darkGreen'
+                'circle-color': [
+                    'case',
+                    ['boolean',
+                        ['feature-state', 'hover'],
+                        false
+                    ],'lightGreen', 'darkGreen']
                 }
             })
-            map.on('mousemove', 'portfolio', function (e) {
-                var features = e.features;
-                var hover;
-                if (features.length == 0) {
-                    hover = ""
-                } else {
-                    var feature = features[0]
-                    hover = '<b>' + feature.properties.address + '</b> ' + feature.properties.ownerName 
+        map.on('mousemove', 'portfolio', function (e) {
+            var features = e.features;
+            var hover;
+            if (features.length != 0) {
+                var feature = features[0]
+                hover = '<b> <a href = "property?apn='+feature.properties.apn+'" >' + feature.properties.address + '</a></b> ' + feature.properties.ownerName 
+                document.getElementById('featureDetail').innerHTML = hover
 
+                if (selectedFeatureId) {
+                    map.removeFeatureState({
+                        source: "portfolio",
+                        id: selectedFeatureId
+                    });
                 }
-                document.getElementById('featureDetail').innerHTML = hover
+                selectedFeatureId = feature.id;
+                map.setFeatureState({
+                    source: 'portfolio',
+                    id: selectedFeatureId,
+                    }, {
+                    hover: true
+                });
             }
-            ) 
-            map.on('mouseleave', 'portfolio', function (e) {
-                var features = e.features;
-                console.log(JSON.stringify(features))
-                var hover = ''
-                document.getElementById('featureDetail').innerHTML = hover
-            }
-            ) 
+        }) 
+
  
     })
 

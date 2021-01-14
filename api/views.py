@@ -38,7 +38,8 @@ def portfolio(request):
     sameOwner['violationCount'] = sameOwner['address'].apply(
         lambda address: countViolations(address))
 
-    features = [asFeature(p) for p in sameOwner.to_dict(orient='records')]
+    features = [asFeature(p)
+                for p in sameOwner.reset_index().to_dict(orient='records')]
     data = {
         "type": "FeatureCollection",
         "features": features
