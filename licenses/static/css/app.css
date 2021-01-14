@@ -110,3 +110,8 @@ th {
   border-radius: 50%;
   cursor: pointer;
 }
+
+#featureDetail {
+  height: 36px;
+  background: rgba(255, 255, 255, 0.8);
+}

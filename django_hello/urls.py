@@ -21,5 +21,6 @@ from django.urls import path, include
 urlpatterns = [
     path('licenses', include('licenses.urls')),
     path('violations', include('violations.urls')),
+    path('api', include('api.urls')),
     path('', include('hello.urls')),
 ]
