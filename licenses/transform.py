@@ -80,19 +80,14 @@ def clean(df):
     df['ownerAddre'] = df['ownerAddre'].str.replace("\n", "")
     df['ownerAdd_1'] = df['ownerAdd_1'].str.replace("\n", "")
 
-    # create new columns
-    df['xPhone'] = df['ownerPhone'].str.replace("[\(\)\-\.\s]", "", regex=True)
-    df['xEmail'] = df['ownerEmail'].apply(cleanEmail)
-    df['xName'] = df['ownerName'].apply(cleanName)
+    # create new columns, using applicant data when owner data is missing
+    df['xPhone'] = df['ownerPhone'].fillna(df['applicantP']).str.replace(
+        r"[\(\)\-\.\s]", "", regex=True)
+    df['xEmail'] = df['ownerEmail'].fillna(df['applicantE']).apply(cleanEmail)
+    df['xName'] = df['ownerName'].fillna(df['applicantN']).apply(cleanName)
     df['xAddress'] = df.apply(lambda row: cleanAddressPair(
         row['ownerAddre'], row['ownerAdd_1']), axis=1)
     return df
-
-
-def key(row):
-    if isinstance(row, int):
-        return str(row)
-    return str(row.index)
 
 
 def createGroups(df):

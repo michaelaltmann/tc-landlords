@@ -1,6 +1,11 @@
 import time
 import pandas as pd
 
+###
+# Use singleton and lazy property patterns
+# to provide efficient access to rental license data
+###
+
 
 class LicenseData:
     singleton = None
