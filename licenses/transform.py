@@ -10,7 +10,9 @@ def cleanAddressLine(address):
     if isinstance(s, str):
         s = s.replace('\n', ' ').replace('.', '').lower().strip()
 
-        # Ignore ave, street, lane, etc
+        # Ignore ave, street, lane, etc  because
+        # THis creates a slight danger of linking landlords at
+        # 123 Main St and 1233 Main Ave
         s = re.sub(street_abvs, ' ', s)
 
         # Look for addresses like 123Main that need a space inserted

@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
-
+import re
 import pandas as pd
 from django.http import HttpResponse
-from .transform import cleanAddressLine
+from .transform import cleanAddressLine, street_abvs
 from violations.violation_data import ViolationData
 import time
 from .license_data import LicenseData
@@ -64,6 +64,11 @@ def property(request):
     return render(request, 'licenses/property.html', context)
 
 
+def nameWords(name, address):
+    words = name.split(' ')
+    [word for word in words if not word in address]
+
+
 def portfolio(request):
     """
     Display all the properties for one portfolio
@@ -75,14 +80,28 @@ def portfolio(request):
         portfolioId = request.POST['portfolioId']
     portfolioId = int(portfolioId)
     sameOwner = licenses.loc[licenses['portfolioId']
-                             == portfolioId][['licenseNum', 'address', 'ownerName']]
+                             == portfolioId][['licenseNum', 'address', 'xName', 'ownerName', 'applicantN']]
     sameOwner['violationCount'] = sameOwner['address'].apply(
         lambda address: countViolations(address))
     sameOwner = sameOwner.reset_index().sort_values(by='address')
     print(f"Portfolio {portfolioId}\n{sameOwner}")
 
+    # For each property, get a list of words in the name that are not part of the address
+    wordLists = list(sameOwner.apply(
+        lambda row: [word for word in re.sub(r"[^a-zA-Z]", " ", row['xName']).split(' ') if not word in row['address']], axis=1))
+    # Concat all the wordLists
+    words = []
+    for l in wordLists:
+        words = words + l
+    distinctWords = list(set(words))
+    wordsToSkip = ['management', 'home']
+    searchTerms = [w for w in distinctWords if len(
+        w) > 2 and w not in wordsToSkip and w not in street_abvs]
+    patterns = [r"(^|\s)"+word+r"($|\s)" for word in searchTerms]
+    pattern = "|".join(patterns)
     context = {
         'portfolioId': portfolioId,
+        'searchTerms': pattern,
         'sameOwner': sameOwner.to_dict(orient='records')
     }
     return render(request, 'licenses/portfolio.html', context)
@@ -125,7 +144,6 @@ def portfolio_search(request):
         matchingApplicantName = licenses[licenses.applicantN.str.contains(
             name, na=False, case=False, regex=True)]
         matches = pd.concat([matchingOwnerName, matchingApplicantName])
-        message = f"Portfolios matching {name}"
     else:
         return redirect(f"/licenses/portfolios")
 
