@@ -84,9 +84,10 @@ def portfolio(request):
     sameOwner['violationCount'] = sameOwner['address'].apply(
         lambda address: countViolations(address))
     sameOwner = sameOwner.reset_index().sort_values(by='address')
-    print(f"Portfolio {portfolioId}\n{sameOwner}")
 
     # For each property, get a list of words in the name that are not part of the address
+    # For example, if the owner is Tom Smith, this will allow us to search for any property
+    # owned by Tom or Smith
     wordLists = list(sameOwner.apply(
         lambda row: [word for word in re.sub(r"[^a-zA-Z]", " ", row['xName']).split(' ') if not word in row['address']], axis=1))
     # Concat all the wordLists
@@ -94,11 +95,12 @@ def portfolio(request):
     for l in wordLists:
         words = words + l
     distinctWords = list(set(words))
-    wordsToSkip = ['management', 'home']
+    wordsToSkip = ['management', 'home', 'properties', 'property']
     searchTerms = [w for w in distinctWords if len(
         w) > 2 and w not in wordsToSkip and w not in street_abvs]
     patterns = [r"(^|\s)"+word+r"($|\s)" for word in searchTerms]
     pattern = "|".join(patterns)
+
     context = {
         'portfolioId': portfolioId,
         'searchTerms': pattern,
