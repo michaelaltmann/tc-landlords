@@ -98,8 +98,7 @@ def portfolio(request):
     wordsToSkip = ['management', 'home', 'properties', 'property']
     searchTerms = [w for w in distinctWords if len(
         w) > 2 and w not in wordsToSkip and w not in street_abvs]
-    patterns = [r"(^|\s)"+word+r"($|\s)" for word in searchTerms]
-    pattern = "|".join(patterns)
+    pattern = " ".join(searchTerms)
 
     context = {
         'portfolioId': portfolioId,
@@ -133,7 +132,10 @@ def search(request):
 
 def portfolio_search(request):
     """
-    Find portfolios by owner name, or diplay largest
+    Find portfolios by owner/applicant name.  The name is treated as a spaced separated
+    list of search terms.  For example Tom* Smith searches for any owner or applicant containing
+    a word starting with Tom or the word Smith
+    If no name is provided display portfolios
     """
     licenses = licenseData.licenses
     if request.method == "GET":
@@ -141,10 +143,15 @@ def portfolio_search(request):
     elif request.method == "POST":
         name = request.POST.get('name', "")
     if name:
+        searchTerms = name.split(" ")
+        patterns = ["(" + r"(^|\s)"+word.replace("*", r"\S*").replace("_", ".*") +
+                    r"($|\s)" + ")" for word in searchTerms]
+        pattern = "|".join(patterns)
+        print(pattern)
         matchingOwnerName = licenses[licenses.ownerName.str.contains(
-            name, na=False, case=False, regex=True)]
+            pattern, na=False, case=False, regex=True)]
         matchingApplicantName = licenses[licenses.applicantN.str.contains(
-            name, na=False, case=False, regex=True)]
+            pattern, na=False, case=False, regex=True)]
         matches = pd.concat([matchingOwnerName, matchingApplicantName])
     else:
         return redirect(f"/licenses/portfolios")

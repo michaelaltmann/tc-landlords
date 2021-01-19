@@ -35,7 +35,7 @@ Find landlords
         {% csrf_token %}
         <label for="name">Pattern</label>
         <input name="name" value = "{{name}}"/>
-        <small id="name" class="form-text text-muted">Enter a regex pattern for owner and applicant name</small>
+        <small id="name" class="form-text text-muted">Enter a pattern for owner/applicant, e.g. Pat* Smith</small>
         <button type="submit" class="btn btn-primary">Search</button>
     </div>
 </form>
