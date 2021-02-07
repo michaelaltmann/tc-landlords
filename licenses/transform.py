@@ -63,6 +63,17 @@ def cleanEmail(s):
         return s
 
 
+def cleanPhone(s):
+    if isinstance(s, str):
+        # remove periods and parens and dashes
+        s = re.sub(r'[\(\)\-\.\s]', '', s)
+        # remove extension
+        s = re.sub(r'x\d*$', '', s, flags=re.IGNORECASE)
+        return s
+    else:
+        return s
+
+
 def load():
     df = pd.read_csv('licenses/licences-raw.csv', index_col=0,
                      low_memory=False)
@@ -83,8 +94,7 @@ def clean(df):
     df['ownerAdd_1'] = df['ownerAdd_1'].str.replace("\n", "")
 
     # create new columns, using applicant data when owner data is missing
-    df['xPhone'] = df['ownerPhone'].fillna(df['applicantP']).str.replace(
-        r"[\(\)\-\.\s]", "", regex=True)
+    df['xPhone'] = df['ownerPhone'].fillna(df['applicantP']).apply(cleanPhone)
     df['xEmail'] = df['ownerEmail'].fillna(df['applicantE']).apply(cleanEmail)
     df['xName'] = df['ownerName'].fillna(df['applicantN']).apply(cleanName)
     df['xAddress'] = df.apply(lambda row: cleanAddressPair(
