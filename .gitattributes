@@ -1,0 +1,1 @@
+data/raw/Henn_Parcels.csv filter=lfs diff=lfs merge=lfs -text
