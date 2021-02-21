@@ -64,11 +64,6 @@ def property(request):
     return render(request, 'licenses/property.html', context)
 
 
-def nameWords(name, address):
-    words = name.split(' ')
-    [word for word in words if not word in address]
-
-
 def portfolio(request):
     """
     Display all the properties for one portfolio
@@ -132,10 +127,10 @@ def search(request):
 
 def portfolio_search(request):
     """
-    Find portfolios by owner/applicant name.  The name is treated as a spaced separated
+    Find portfolios by owner/applicant name.  The name is treated as a space-separated
     list of search terms.  For example Tom* Smith searches for any owner or applicant containing
     a word starting with Tom or the word Smith
-    If no name is provided display portfolios
+    If no name is provided display all portfolios
     """
     licenses = licenseData.licenses
     if request.method == "GET":
@@ -182,6 +177,10 @@ def portfolios(request):
 
 
 def map(request):
+    """
+    Display a map with dots for the properties
+    in a portfolio.
+    """
     licenses = licenseData.licenses
     if request.method == "GET":
         portfolioId = request.GET['portfolioId']

@@ -32,7 +32,7 @@ class LicenseData:
         def getLicenses(self):
             print('** Loading licenses **')
             tic = time.perf_counter()
-            licenses = pd.read_csv('licenses/clean_grouped_rental_licenses.csv', index_col=0,
+            licenses = pd.read_csv('data/gen/clean_grouped_rental_licenses.csv', index_col=1,
                                    low_memory=False)
             toc = time.perf_counter()
             print(f"Loaded licenses in {toc - tic:0.4f} seconds")
@@ -57,7 +57,7 @@ class LicenseData:
                 })
             portfolios = portfolios.sort_values(
                 by='portfolioSize', ascending=False)
-            allPortfolios = portfolios.reset_index().rename(
+            allPortfolios = portfolios.rename(
                 columns={"ownerName": "ownerNames", "applicantN": "applicantNames"})
             print(f"AllPortfolios\n{allPortfolios}")
             toc = time.perf_counter()

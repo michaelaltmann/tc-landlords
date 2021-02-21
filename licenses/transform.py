@@ -75,7 +75,7 @@ def cleanPhone(s):
 
 
 def load():
-    df = pd.read_csv('licenses/licences-raw.csv', index_col=0,
+    df = pd.read_csv('licenses/licences-raw.csv', index_col=False,
                      low_memory=False)
     return df
 
