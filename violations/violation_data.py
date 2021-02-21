@@ -33,7 +33,7 @@ class ViolationData:
 
         def getViolations(self):
             all_files = [
-                f"data/raw/violations-ward{n}.csv" for n in range(1, 14)]
+                f"data/raw/mpls-violations/ward{n}.csv" for n in range(1, 14)]
             print(f"Loading {all_files}")
             # Address	Tier	Case Number	Violation Code	Violation Code Description	Violation Grouping	Violation Resolved?	Violator Name   	Violator Name	Violation Date
 
