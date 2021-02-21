@@ -32,7 +32,8 @@ class ViolationData:
             return self._countByAddress
 
         def getViolations(self):
-            all_files = [f"violations/ward{n}.csv" for n in range(1, 14)]
+            all_files = [
+                f"data/raw/violations-ward{n}.csv" for n in range(1, 14)]
             print(f"Loading {all_files}")
             # Address	Tier	Case Number	Violation Code	Violation Code Description	Violation Grouping	Violation Resolved?	Violator Name   	Violator Name	Violation Date
 
