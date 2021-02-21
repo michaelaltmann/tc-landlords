@@ -55,7 +55,7 @@ class LicenseData:
                     'ownerName': lambda s: '; '.join(list(set(s.dropna()))),
                     'applicantN': lambda s: '; '.join(list(set(s.dropna()))),
                 })
-            portfolios = portfolios.sort_values(
+            portfolios = portfolios.reset_index().sort_values(
                 by='portfolioSize', ascending=False)
             allPortfolios = portfolios.rename(
                 columns={"ownerName": "ownerNames", "applicantN": "applicantNames"})
