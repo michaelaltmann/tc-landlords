@@ -34,7 +34,11 @@ def portfolio(request):
     portfolioId = int(portfolioId)
 
     sameOwner = licenses.loc[licenses['portfolioId']
-                             == portfolioId][['licenseNum', 'address', 'ownerName', 'latitude', 'longitude']]
+                             == portfolioId][['licenseNum', 'ownerName', 'latitude', 'longitude']]
+    sameOwner = sameOwner.loc[sameOwner['latitude'].notnull() &
+                              sameOwner['longitude'].notnull()]
+    sameOwner = sameOwner.reset_index()
+    sameOwner = sameOwner.fillna('NA')
     sameOwner['violationCount'] = sameOwner['address'].apply(
         lambda address: countViolations(address))
 

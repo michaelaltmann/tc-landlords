@@ -45,6 +45,7 @@ class ViolationData:
                                         low_memory=False, encoding='utf-16') for f in all_files])
             df['violationDate'] = pd.to_datetime(
                 df['violationDateStr'], format="%m/%d/%Y", errors='coerce').dt.strftime('%Y-%m-%d')
+            df['address'] = df['address'].astype(str) + ", MINNEAPOLIS"
             toc = time.perf_counter()
             print(f"Loaded violations in {toc - tic:0.4f} seconds")
             return df

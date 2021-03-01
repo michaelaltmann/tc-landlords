@@ -1,15 +1,16 @@
+<!-- prettier-ignore -->
 {% extends 'base.html' %}
-
 {% block title %}License Details{% endblock title %}
-
 {% block content %}
 {% if license is not None %}
-    <p>
-        <h3>License Details for {{apn}}</h3>
+ 
+<p>
+        <h3> Details for {{address}}</h3>
         <pre>
 {{ license }}
         </pre>
     </p>
+    {% if violations %}
 
     <h3>Violations</h3>
     <table class="table-sm">
@@ -21,15 +22,19 @@
         </thead>
         <tbody>
     {% for violation in violations %}
-    <tr>
-        <td>{{violation.violationDate }}</td>
-        <td>{{violation.caseNumber }}</td>
-        <td>{{violation.grouping }}</td>
-        <td>{{violation.description }}</td>
-    </tr>
+            <tr>
+                <td>{{violation.violationDate }}</td>
+                <td>{{violation.caseNumber }}</td>
+                <td>{{violation.grouping }}</td>
+                <td>{{violation.description }}</td>
+            </tr>
     {% endfor %}
-    </tbody>
+        </tbody>
     </table>
+    {% else %}
+    <h3>No Violations</h3>
+    {% endif %}
+
 
     <p>
     <h3>Rental Properties in this Landlord's Portfolio</h3>
@@ -47,7 +52,7 @@
         <tbody>
     {% for prop in sameOwner %}
     <tr>
-        <td><a href="property?apn={{prop.apn}}" >{{prop.apn }}</a></td>
+        <td><a href="property?address={{prop.address}}" >{{prop.address }}</a></td>
         <td>{{prop.licenseNum }}</td>
         <td>{{prop.tier }}</td>
         <td>{{prop.address }}</td>

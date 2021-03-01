@@ -1,8 +1,9 @@
+from numpy.lib.arraysetops import unique
 import pandas as pd
 import numpy as np
 import re
 from licenses.union_find import UnionFind
-from licenses.transform import clean
+from licenses.transform import clean, cleanName, cleanAddressLine
 
 
 def buildAddress(row):
@@ -25,6 +26,8 @@ def buildAddress(row):
     if isinstance(row['CONDO_NO'], str) and len(row['CONDO_NO'].strip()) > 0:
         words.append('#' + row['CONDO_NO'].strip())
     s = " ".join(words)
+    if isinstance(row['MUNIC_NM'], str) and len(row['MUNIC_NM'].strip()) > 0:
+        s = s + ", " + row['MUNIC_NM'].strip()
     return s
 
 
@@ -58,11 +61,12 @@ def loadHennProperty():
                      'VACANT LAND-RURAL RESIDENTIAL',
                      'NON-PROFIT COMMUNITY ASSN', 'SEASONAL LAKESHORE RESTAURANT',
                      ]
-    df = df.loc[df['HMSTD_CD1'].str.match(
+    rowsOfInterest = df.loc[df['HMSTD_CD1'].str.match(
         'N', na=False) & df['PR_TYP_NM1'].isin(propertyTypes)]
-    df = df.loc[df['MUNIC_NM'].str.match('MINNEAPOLIS', na=False)]
-    df['address'] = df.apply(lambda row: buildAddress(row), axis=1)
-    return df
+#    rowsOfInterest = rowsOfInterest.loc[df['MUNIC_NM'].str.match('MINNEAPOLIS', na=False)]
+    rowsOfInterest['address'] = rowsOfInterest.apply(
+        lambda row: buildAddress(row), axis=1)
+    return rowsOfInterest
 
 
 def loadMplsLicense():
@@ -72,6 +76,7 @@ def loadMplsLicense():
     return df
 
 
+# return the first address that has a number in it
 def selectAddress(addressList):
     a = next((s for s in addressList if isinstance(
         s, str) and re.match(r'\d', s)), np.nan)
@@ -87,15 +92,19 @@ def apnToStatePin(s):
 
 
 def createGroups():
-    key = 'address'
-# Load data
+    # Load data
+    global henn, licenses
     henn = loadHennProperty()
     licenses = loadMplsLicense()
     licenses = clean(licenses)
+    licenses['address'] = licenses['address'] + ', MINNEAPOLIS'
 
+    # Get all the addresses
+    allAddresses = pd.concat(
+        [henn[[key]], licenses[[key]]]).drop_duplicates(key)
     # initialize
     uf = UnionFind()
-    for id in licenses[key]:
+    for id in allAddresses[key]:
         uf.add(id)
 
     print(f"Begin with n_comps={uf.n_comps}")
@@ -106,46 +115,62 @@ def createGroups():
     addLinksForAttribute(licenses, key, 'xPhone', uf)
     print(f"After linking by xPhone  n_comps={uf.n_comps}")
 
-    ownerNames = henn[[key, 'OWNER_NM']].rename(columns={'OWNER_NM': 'xName'})
+    ownerNames = henn[[key, 'OWNER_NM']].rename(
+        columns={'OWNER_NM': 'xName'})
+    ownerNames['xName'] = ownerNames['xName'].apply(lambda s: cleanName(s))
     taxNames = henn[[key, 'TAXPAYER_NM']].rename(
         columns={'TAXPAYER_NM': 'xName'})
+    taxNames['xName'] = taxNames['xName'].apply(lambda s: cleanName(s))
 
-    names = pd.concat([ownerNames, taxNames, licenses[['address', 'xName']]
+    names = pd.concat([ownerNames, taxNames, licenses[[key, 'xName']]
                        ], axis=0)
 
     addLinksForAttribute(names, key, 'xName', uf)
     print(f"After linking by xName  n_comps={uf.n_comps}")
 
-    henn['zTaxAddress'] = henn.apply(lambda row: selectAddress([
-        row['TAXPAYER_NM'], row['TAXPAYER_NM_1']]), axis=1)
+    henn['xAddress'] = henn.apply(lambda row: cleanAddressLine(selectAddress([
+        row['TAXPAYER_NM'], row['TAXPAYER_NM_1']])), axis=1)
 
     addresses = pd.concat([
-        henn[[key, 'zTaxAddress']].rename(
-            columns={'zTaxAddress': 'xAddress'}), licenses[[key, 'xAddress']]
+        henn[[key, 'xAddress']], licenses[[key, 'xAddress']]
     ], axis=0)
 
     addLinksForAttribute(addresses, key, 'xAddress', uf)
     print(f"After linking by xAddress  n_comps={uf.n_comps}")
 
     print("Writing portfolio id back to the dataframe")
-    licenses['portfolioId'] = licenses[key].apply(lambda id: uf.find(id))
+    allAddresses['portfolioId'] = allAddresses[key].apply(
+        lambda id: uf.find(id))
     print("Writing portfolio size back to the dataframe")
     componentMapping = uf.component_mapping()
-    licenses['portfolioSize'] = licenses[key].apply(
+    allAddresses['portfolioSize'] = allAddresses[key].apply(
         lambda id: len(componentMapping[id]))
     print("Done creating portfolios")
-    return licenses
+    return allAddresses
 
 
 if __name__ == "__main__":
-    # execute only if run as a script
-    licenses = createGroups()
-    print(licenses)
+    key = 'address'
+    allAddresses = createGroups()
+    allAddresses = allAddresses.set_index(key)
+    licenses = licenses.set_index(key)
+    henn = henn.set_index(key)
+    # Add fields from source files
+    allAddresses = allAddresses.join(licenses[['apn', 'licenseNum', 'issueDate', 'applicantN', 'ownerName']].rename(
+        columns={'ownerName': 'licenseOwnerName'}), how='left')
+    allAddresses = allAddresses.join(
+        henn[['PID', 'OWNER_NM', 'PR_TYP_NM1', 'LAT', 'LON']], how='left')
+    allAddresses = allAddresses.rename(
+        columns={'LAT': 'latitude', 'LON': 'longitude'})
+    allAddresses['ownerName'] = allAddresses['licenseOwnerName'].fillna(
+        allAddresses['OWNER_NM']).str.strip()
+
+    print(allAddresses)
 
     print("Writing to data/gen/clean_grouped_rental_licenses.csv")
-    licenses.to_csv('data/gen/clean_grouped_rental_licenses.csv', mode='w')
+    allAddresses.to_csv('data/gen/clean_grouped_rental_licenses.csv', mode='w')
 
-    portfolios = licenses.groupby('portfolioId')[[
+    portfolios = allAddresses.groupby('portfolioId')[[
         'ownerName', 'applicantN', 'portfolioSize']].agg({
             'portfolioSize': min,
             'ownerName': lambda s: '; '.join(list(set(s.dropna()))),
@@ -154,5 +179,5 @@ if __name__ == "__main__":
     portfolios = portfolios.sort_values(
         by='portfolioSize', ascending=False)
     allPortfolios = portfolios.reset_index().rename(
-        columns={"OWNER_NAME": "ownerNames", "applicantN": "applicantNames"})
+        columns={"ownerName": "ownerNames", "applicantN": "applicantNames"})
     print(allPortfolios.head(20))

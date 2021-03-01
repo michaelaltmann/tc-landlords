@@ -32,7 +32,7 @@ class LicenseData:
         def getLicenses(self):
             print('** Loading licenses **')
             tic = time.perf_counter()
-            licenses = pd.read_csv('data/gen/clean_grouped_rental_licenses.csv', index_col=1,
+            licenses = pd.read_csv('data/gen/clean_grouped_rental_licenses.csv', index_col='address',
                                    low_memory=False)
             toc = time.perf_counter()
             print(f"Loaded licenses in {toc - tic:0.4f} seconds")

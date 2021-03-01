@@ -56,9 +56,8 @@
             var hover;
             if (features.length != 0) {
                 var feature = features[0]
-                hover = '<b> <a href = "property?apn='+feature.properties.apn+'" >' + feature.properties.address + '</a></b> ' + feature.properties.ownerName 
+                hover = '<b> <a href = "property?address='+feature.properties.address+'" >' + feature.properties.address + '</a></b> ' + feature.properties.ownerName 
                 document.getElementById('featureDetail').innerHTML = hover
-
                 if (selectedFeatureId) {
                     map.removeFeatureState({
                         source: "portfolio",

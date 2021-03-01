@@ -1,47 +1,38 @@
-{% extends 'base.html' %}
-
-{% block title %}Rental Properties{% endblock title %}
+<!-- prettier-ignore -->
+{% extends 'base.html' %} 
+{% block title %}
+Rental Properties
+{% endblock title %}
 {% block content %}
+ 
 {% if properties and not properties.empty %}
 <table class="table">
-    <thead>
-        <th>APN</th>
-        <th>License</th>
-        <th>Address</th>
-        <th>Owner</th>
-    </thead>
-    <tbody>
-{% for prop in properties %}
-<tr>
-    <td><a href="property?apn={{prop.apn}}" >{{prop.apn }}</a></td>
-    <td>{{prop.licenseNum }}</td>
-    <td>{{prop.address }}</td>
-    <td>{{prop.ownerName }}</td>
-</tr>
-{% endfor %}
-</tbody>
+  <thead>
+    <th>Address</th>
+    <th>License</th>
+    <th>Owner</th>
+  </thead>
+  <tbody>
+    {% for prop in properties %}
+    <tr>
+      <td><a href="property?address={{prop.address}}">{{prop.address }}</a></td>
+      <td>{{prop.licenseNum }}</td>
+      <td>{{prop.ownerName }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
 </table>
 {% else %}
 <h4>No matching rental properties</h4>
-{% endif %}
-Get information for an APN
-<form action="./property" method="post">
-    {% csrf_token %}
-    APN: <input name="apn"/>
-    <input type="submit" value="Search">
-</form>
-
-Search for a rental property by address
+{% endif %} Search for a rental property by address
 <form action="./search" method="post">
-    {% csrf_token %}
-    Address: <input name="address" value = "{{address}}"/>
-    <button type="submit" class="btn btn-primary">Search</button>
+  {% csrf_token %} Address: <input name="address" value="{{address}}" />
+  <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
 Search for owners
 <form action="./portfolios" method="post">
-    {% csrf_token %}
-    Pattern: <input name="name" value = "{{name}}"/>
-    <button type="submit" class="btn btn-primary">Search</button>
+  {% csrf_token %} Pattern: <input name="name" value="{{name}}" />
+  <button type="submit" class="btn btn-primary">Search</button>
 </form>
 {% endblock content %}

@@ -3,7 +3,7 @@ from django.shortcuts import redirect
 import re
 import pandas as pd
 from django.http import HttpResponse
-from .transform import cleanAddressLine, street_abvs
+from .transform import cleanName, street_abvs
 from violations.violation_data import ViolationData
 import time
 from .license_data import LicenseData
@@ -26,8 +26,9 @@ def index(request):
     Home page for rental licenses
     """
     licenses = licenseData.licenses
-    context = {'licenses': licenses[[
-        'address', 'ownerName', 'portfolioSize']], 'address': ''}
+    context = {
+        'licenses': licenses[['ownerName', 'portfolioSize']],
+        'address': ''}
     return render(request, 'licenses/index.html', context)
 
 
@@ -38,25 +39,26 @@ def property(request):
     licenses = licenseData.licenses
     violations = violationData.violations
     if request.method == "GET":
-        apn = request.GET['apn']
+        address = request.GET['address']
     elif request.method == "POST":
-        apn = request.POST['apn']
-    if not apn in licenseData.licenses.index:
+        address = request.POST['address']
+    if not address in licenseData.licenses.index:
         context = {
 
         }
         return render(request, 'licenses/list.html', context)
-    license = licenses.loc[apn]
+    license = licenses.loc[address]
     portfolioId = license['portfolioId']
     sameOwner = licenses.loc[licenses['portfolioId']
-                             == portfolioId][['licenseNum', 'tier', 'address', 'ownerName']]
+                             == portfolioId][['licenseNum', 'ownerName']]
+    sameOwner = sameOwner.reset_index()
     sameOwner['violationCount'] = sameOwner['address'].apply(
         lambda address: countViolations(address))
-    sameOwner = sameOwner.reset_index().sort_values(by='address')
+    sameOwner = sameOwner.sort_values(by='address')
     propertyViolations = violations[violations.address ==
-                                    license['address']].sort_values(by='violationDate', ascending=False)
+                                    address].sort_values(by='violationDate', ascending=False)
     context = {'licenses': licenses,
-               'apn': apn,
+               'address': address,
                'license': license,
                'portfolioId': portfolioId,
                'sameOwner': sameOwner.to_dict(orient='records'),
@@ -75,16 +77,17 @@ def portfolio(request):
         portfolioId = request.POST['portfolioId']
     portfolioId = int(portfolioId)
     sameOwner = licenses.loc[licenses['portfolioId']
-                             == portfolioId][['licenseNum', 'address', 'xName', 'ownerName', 'applicantN']]
+                             == portfolioId][['licenseNum',  'ownerName', 'applicantN']]
+    sameOwner = sameOwner.reset_index()
     sameOwner['violationCount'] = sameOwner['address'].apply(
         lambda address: countViolations(address))
-    sameOwner = sameOwner.reset_index().sort_values(by='address')
+    sameOwner = sameOwner.sort_values(by='address')
 
     # For each property, get a list of words in the name that are not part of the address
     # For example, if the owner is Tom Smith, this will allow us to search for any property
     # owned by Tom or Smith
     wordLists = list(sameOwner.apply(
-        lambda row: [word for word in re.sub(r"[^a-zA-Z]", " ", row['xName']).split(' ') if not word in row['address']], axis=1))
+        lambda row: [word for word in re.sub(r"[^a-zA-Z]", " ", cleanName(row['ownerName'])).split(' ') if not word in row['address']], axis=1))
     # Concat all the wordLists
     words = []
     for l in wordLists:
@@ -112,13 +115,13 @@ def search(request):
         address = request.GET['address']
     elif request.method == "POST":
         address = request.POST['address']
-    matches = licenses[licenses.address.str.contains(
+    matches = licenses[licenses.index.str.contains(
         address, na=False, case=False)]
     if len(matches.index) == 1:
-        apn = matches.iloc[0].name
-        return redirect(f"/licenses/property?apn={apn}")
+        address = matches.iloc[0].name
+        return redirect(f"/licenses/property?address={address}")
     else:
-        matches = matches[['licenseNum', 'address', 'ownerName']
+        matches = matches[['licenseNum',  'ownerName']
                           ].reset_index().sort_values(by='address')
         context = {'address': address,
                    'properties': matches.to_dict(orient='records')}
@@ -189,7 +192,8 @@ def map(request):
     portfolioId = int(portfolioId)
 
     sameOwner = licenses.loc[licenses['portfolioId']
-                             == portfolioId][['licenseNum', 'address', 'ownerName', 'latitude', 'longitude']]
+                             == portfolioId][['licenseNum',  'ownerName', 'latitude', 'longitude']]
+    sameOwner = sameOwner.reset_index()
     context = {
         'portfolioId': portfolioId,
         'mapbox_access_token': 'pk.eyJ1IjoibWFsdG1hbm4iLCJhIjoiQjgzZTEyNCJ9.0_UJWIO6Up0HkMQajYj6Ew',
