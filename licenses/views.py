@@ -112,20 +112,24 @@ def search(request):
     """
     licenses = licenseData.licenses
     if request.method == "GET":
-        address = request.GET['address']
+        address = request.GET.get('address', '')
     elif request.method == "POST":
-        address = request.POST['address']
-    matches = licenses[licenses.index.str.contains(
-        address, na=False, case=False)]
-    if len(matches.index) == 1:
-        address = matches.iloc[0].name
-        return redirect(f"/licenses/property?address={address}")
+        address = request.POST.get('address', '')
+
+    if address:
+        matches = licenses[licenses.index.str.contains(
+            address, na=False, case=False)]
+        if len(matches.index) == 1:
+            address = matches.iloc[0].name
+            return redirect(f"/licenses/property?address={address}")
+        else:
+            matches = matches[['licenseNum',  'ownerName']
+                              ].reset_index().sort_values(by='address')
+            context = {'address': address,
+                       'properties': matches.to_dict(orient='records')}
+            return render(request, 'licenses/list.html', context)
     else:
-        matches = matches[['licenseNum',  'ownerName']
-                          ].reset_index().sort_values(by='address')
-        context = {'address': address,
-                   'properties': matches.to_dict(orient='records')}
-        return render(request, 'licenses/list.html', context)
+        return render(request, 'licenses/search.html')
 
 
 def portfolio_search(request):

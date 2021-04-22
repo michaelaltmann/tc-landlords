@@ -10,4 +10,6 @@ urlpatterns = [
     path('/portfolio_search', views.portfolio_search),
     path('/portfolio', views.portfolio),
     path('/map', views.map),
+    path('/search', views.search)
+
 ]

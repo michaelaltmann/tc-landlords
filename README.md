@@ -71,5 +71,12 @@ python manage.py runserver
 With the Azure commandline installed and authenticated, run
 
 ```
-az webapp up --name tc-landlords --resource-group michael.altmann_rg_Linux_centralus
+rg=michael.altmann_rg_Linux_centralus
+az configure --defaults location=centralus group=$rg
+az group create --name $rg
+az appservice plan create --name freeplan --sku F1 --is-linux
+az appservice plan create --name basicplan --sku B1 --is-linux
+az appservice plan create --name standardplan --sku S1 --is-linux
+az webapp create --name tc-landlords --resource-group $rg --plan standardplan --runtime "python|3.6"
+az webapp up --name tc-landlords --resource-group $rg --plan standardplan
 ```
