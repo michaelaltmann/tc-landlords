@@ -22,5 +22,6 @@ urlpatterns = [
     path('licenses', include('licenses.urls')),
     path('violations', include('violations.urls')),
     path('api', include('api.urls')),
+    path('home', include('home.urls')),
     path('', include('home.urls')),
 ]

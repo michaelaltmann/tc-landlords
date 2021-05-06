@@ -89,12 +89,8 @@ body {
   padding: 10px;
   width: 100%;
 }
-.nav {
-  background: black;
-}
-.nav-link {
-  color: beige;
-}
+
+
 th {
   background-color: rgb(10, 10, 160);
   color: white;
