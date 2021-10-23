@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'tc-landlords'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_188973FD1BEF46608CE8B556E14DD24D }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F232C61C504F4B199C59E05F6EDB95D8 }}
