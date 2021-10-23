@@ -1,0 +1,96 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Portfolio {% endblock title %}
+
+{% block content %}
+<H3>Portfolio {{PORT_ID}}</H3>
+<span>Map View</span> | <a href="portfolio?PORT_ID={{portfolioId}}">List View</a>
+
+<div id="featureDetail"></div>
+<div class="container">
+   <div id='map' width="450px" style='height:700px'></div>
+   <div class="loader spinner-border" title="0" id="loader"></div>
+</div>
+ 
+ <script>
+    mapboxgl.accessToken = '{{ mapbox_access_token }}';
+    function zoomToBounds(map, coordinates) {
+        // Adjust the map bounds to include a set of coordinates
+        if (coordinates) {
+            // Pass the first coordinates in the list to `lngLatBounds` &
+            // wrap each coordinate pair in `extend` to include them in the bounds
+            // result. A variation of this technique could be applied to zooming
+            // to the bounds of multiple Points or Polygon geomteries - it just
+            // requires wrapping all the coordinates with the extend method.
+            var bounds = coordinates.reduce(function(bounds, coord) {
+            return bounds.extend(coord);
+            }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+
+            map.fitBounds(bounds, {
+            padding: 20
+            });
+        }
+    };
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v10', // stylesheet location
+        center: [-93.26,44.97], // starting position [lng, lat]
+        zoom: 9 // starting zoom
+    });
+    map.on('sourcedata', function(e) {
+        document.getElementById("loader").style.visibility = "hidden";
+    })
+
+    map.on('load', function() {
+        var selectedFeatureId = null;
+        map.addSource('portfolio', {
+            type: 'geojson',
+            data: '/api/portfolio?PORT_ID={{portfolioId}}',
+            'generateId': true 
+            });
+
+        map.addLayer({
+            'id': 'portfolio',
+            'type': 'circle',
+            'source': 'portfolio',
+            'paint': {
+                'circle-radius': 6,
+                'circle-stroke-color': 'black',
+                'circle-stroke-width': 1,
+                'circle-color': [
+                    'case',
+                    ['boolean',
+                        ['feature-state', 'hover'],
+                        false
+                    ],'lightGreen', 'darkGreen']
+                }
+            })
+        map.on('mousemove', 'portfolio', function (e) {
+            var features = e.features;
+            var hover;
+            if (features.length != 0) {
+                var feature = features[0]
+                hover = '<b> <a href = "property?key='+feature.properties.GLOBAL_ID+'" >' + feature.properties.ADDRESS + '</a></b> ' + feature.properties.NAMES 
+                document.getElementById('featureDetail').innerHTML = hover
+                if (selectedFeatureId) {
+                    map.removeFeatureState({
+                        source: "portfolio",
+                        id: selectedFeatureId
+                    });
+                }
+                selectedFeatureId = feature.id;
+                map.setFeatureState({
+                    source: 'portfolio',
+                    id: selectedFeatureId,
+                    }, {
+                    hover: true
+                });
+            }
+        }) 
+
+ 
+    })
+</script>
+
+{% endblock content %}

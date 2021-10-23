@@ -1,0 +1,38 @@
+<!-- prettier-ignore -->
+{% extends 'base.html' %} 
+{% block title %}
+Rental Properties
+{% endblock title %}
+{% block content %}
+ 
+{% if properties and not properties.empty %}
+<table class="table">
+  <thead>
+    <th>Address</th>
+    <th>License</th>
+    <th>Names</th>
+  </thead>
+  <tbody>
+    {% for parcel in properties %}
+    <tr>
+      <td><a href="property?key={{parcel.GLOBAL_ID}}">{{parcel.ADDRESS }}</a></td>
+      <td>{{parcel.licenseNum }}</td>
+      <td>{{parcel.NAMES }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<h4>No matching rental properties</h4>
+{% endif %} Search for a rental property by address or parcel ID
+<form action="./search" method="post">
+  {% csrf_token %} Address: <input name="address" value="{{address}}" />
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+Search for owner
+<form action="./portfolio_search" method="post">
+  {% csrf_token %} Pattern: <input name="name" value="{{name}}" />
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+{% endblock content %}

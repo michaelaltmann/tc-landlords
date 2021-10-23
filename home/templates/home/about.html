@@ -1,0 +1,68 @@
+{% extends 'base.html' %} 
+{% block title %}About {% endblock title %} 
+
+{% block content %}
+
+<h4>Our Story</h4>
+
+<p>
+    This site grew out of a Twin Cities Open Data 
+    <a href="https://docs.google.com/presentation/d/16-dNwFRlmQ5ZBFG5AjBvvWU-k1jf1Q43mvD2nXVlydE/edit#slide=id.p">
+    project proposal</a>.
+
+    The goal is to help tenants and city government  recognize when a landlord owns many
+    parcels.  In some cases a landlord owns hundreds of properties using shell corporations.
+    This information provides better visibility into the landlord's behavior and can be used to 
+    pressure the landlord.
+
+</p>
+
+   
+<h4>Data and Technology</h4>
+<p> 
+Currently, this site is a mashup of four datasets:
+    <ul>
+
+    <li><a href="https://gis-hennepin.opendata.arcgis.com/datasets/county-parcels/explore?location=45.015100%2C-93.474950%2C10.63">Hennepin County Parcel Data</a> 
+     provides information about locations of parcels and their owners in Hennepin.
+
+    <li><a href="https://opendata.minneapolismn.gov/datasets/active-rental-licenses">Minneapolis Rental License dataset</a> is our 
+    source of information licensing of rental properties.  It is better
+    than the county-level property tax data because it includes owner email and phone number. 
+
+    <li>Minneapolis Regulatory Services provided the data about 
+    <a href="https://tableau.minneapolismn.gov/views/OpenDataRegulatoryServices-Violations/Introduction">violations</a>.  This was exported from the Tableau
+    interface. We had to export one precinct at a time because of Tableau limitations.
+
+    <li> <a href="https://gisdata.mn.gov/en_AU/dataset/us-mn-co-ramsey-plan-parcel-data">Ramsey County parcel data</a> 
+         provides information about locations of parcels and their owners in Ramsey.
+
+    </ul>
+
+ </p>
+<p>
+   After the raw data were downloaded as csv files, they are brought into Python using the Pandas
+    package and then exposed as a Django web application hosted on <a href="https://tc-landlords.azurewebsites.net">Azure</a>.
+
+    The source code is available on <a href="https://github.com/michaelaltmann/tc-landlords">Github</a>.
+</p>
+<p>
+    <h4>Caveats</h4>  
+    <ul>
+    <li>This website is based on data that were obtained
+    from Minneapolis (Dec 2020), Hennepin county (Aug 2021) and Ramsey county (May 2021). It may not reflect
+    with current conditions.
+    <li>This website performs textual analysis to determine when multiple properties are owned 
+    by a single landlord.  That analysis may introduce errors where two different landlords with 
+    identical information are treated as a single landlord or where a single landlord is treated
+    as multiple entities because information does not match.
+    <li> Violation data are currently only available for Minneapolis.
+    <li> Some of the violations at a property may be associated with a previous landlord.
+    Some violations, such as mold, may still be relevant to you, but others may not. 
+    The sale date of the property should be considered when reviewing the violations.
+    </ul>
+
+
+</p>
+
+{% endblock content %}

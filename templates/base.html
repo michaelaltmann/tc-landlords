@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <meta name="robots" content="noindex">
+    {% load static %}
+    {# Make modifiable head elements #}
+    <head>
+        <title>{% block title %}Home {% endblock title %} </title>
+        {% block head_favicon %}
+            <link rel="icon" type="image/png"
+                  href="{% static 'images/favicon.ico' %}">
+        {% endblock head_favicon %}
+        {% block head_meta %}
+            {% block head_meta_charset %}
+                <meta http-equiv="Content-Type"
+                      content="text/html; charset=utf-8" />
+            {% endblock head_meta_charset %}
+            {% block head_meta_contentlanguage %}
+                <meta http-equiv="Content-Language" value="en-US" />
+            {% endblock head_meta_contentlanguage %}
+            {% block head_meta_viewport %}
+                <meta name="viewport"
+                      content="width=device-width, initial-scale=1.0">
+            {% endblock head_meta_viewport %}
+        {% endblock head_meta %}
+        {% block head_css %}
+            {% block head_css_site %}
+            <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"  crossorigin="anonymous">
+            <link href='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.css' rel='stylesheet' />
+            <link href="{% static 'css/app.css' %}" rel="stylesheet" media="screen">
+                      {% endblock head_css_site %}
+            {% block head_css_section %}{% endblock head_css_section %}
+            {% block head_css_page %}{% endblock head_css_page %}
+        {% endblock head_css %}
+        {% block head_javascript %}
+            {% block footer_javascript_site %}
+            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"  crossorigin="anonymous"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"  crossorigin="anonymous"></script>
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"  crossorigin="anonymous"></script>
+            <script src='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js'></script>
+            <script src="{% static 'js/app.js' %}"></script>             
+            {% endblock footer_javascript_site %}
+        {% endblock head_javascript %}
+
+    </head>
+
+    <body>
+        {# Navigation Menu #}
+        <header>
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <a class="navbar-brand" href="/">
+                    <img src="{% static 'images/favicon-32x32.png' %}" width="30" hight="30">
+                    Renter's Resources
+                </a>
+                <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+
+                        <li class="nav-item">
+                        <a class="nav-link" href="/home/about">About</a>
+                            </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/home/help">Help</a>
+                        </li>
+                            <li class="nav-item">
+                        <a class="nav-link" href="/home/links">Links</a>
+                        </li>
+                    </ul>               
+                </div>
+              </nav>
+        </header>
+        {# The Document Body #}
+        <div id="site-wrapper">
+            {% block content %}
+                if you see this, something is wrong!
+            {% endblock content %}
+        </div>
+        {# The Footer #}
+        <div class="footer">
+            <div class="container">
+                <p>Copyright &copy; 2020 Michael Altmann</p>
+            </div>
+        </div>
+    </body>
+
+    {# Set of blocks that can be used to display JavaScript files #}
+    {% block footer_javascript %}
+        {% block footer_javascript_section %}{% endblock footer_javascript_section %}
+        {% block footer_javascript_page %}{% endblock footer_javascript_page %}
+    {% endblock footer_javascript %}
+</html>

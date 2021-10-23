@@ -1,0 +1,45 @@
+Parcel
+  country
+  state
+  county
+  parcelId
+  parcelIdAssigner (probably a county name)
+  latitude
+  longitude
+  boundary (optional GIS geometry data of the parcel)
+  census_tract or other location info
+  * globalParcelId (a parcel ID that should be globally unique.  Comprised of country, state, parcelIdAssigner and parcelId)
+
+Address
+  address_line_1
+  address_line_2
+  city
+  state (aka province)
+  zip (aka postal_code)
+  country
+  * clean_value (single text field with normalized value)
+
+
+Owner_info
+  info_type  (email, phone, address, name, secondary_name)
+  source_value (raw value)
+  * clean_value (lowercased email, phone w/out punctuation, normalized address, etc)
+
+Entity (LLC or corp or ?)
+  name
+  id (some sort of ID from the Secy of State)
+
+Eviction
+  date
+  id (some sort of court case number)
+  status
+
+Parcel >- located_at --< Address
+Parcel >--- owned_by -< Owner_info
+Entity --- has_details -< Owner_info
+Entity --- related -< Entity
+Eviction >-- evicted_by ---< Owner_info
+Eviction >-- evicted_at ---< Address
+
+
+

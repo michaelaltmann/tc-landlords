@@ -1,0 +1,69 @@
+
+
+{% extends 'base.html' %} 
+{% block title %} 
+Search
+{% endblock title %}
+
+{% block content %}
+<script>
+
+  function setSearchMethod(searchMethod) {
+    if (searchMethod === "address") {
+      $("#searchByAddress").show();
+      $("#searchByOwner").hide();
+    } else if (searchMethod === "keyword") {
+      $("#searchByAddress").hide();
+      $("#searchByOwner").show();
+    }
+  }
+  function onSearchMethodChanged() {
+    setSearchMethod(this.value)
+  }
+  $(document).ready(function () {
+    $("input[type=radio][name=searchMethod]").change(onSearchMethodChanged);
+    setSearchMethod('address')
+  });
+</script>
+<div class="d-flex justify-content-center">
+  <span class = "mr-2">I want to search by </span>
+<div class="form-check form-check-inline">
+  <input
+    class="form-check-input"
+    type="radio"
+    value="address"
+    id="flexCheckDefault"
+    name="searchMethod"
+    checked
+  />
+  <label class="form-check-label" for="flexCheckDefault"> address </label>
+</div>
+<div class="form-check form-check-inline">
+  <input
+    class="form-check-input"
+    type="radio"
+    value="keyword"
+    name="searchMethod"
+    id="flexCheckChecked"
+  />
+  <label class="form-check-label" for="flexCheckChecked"> owner </label>
+</div>
+</div>
+<div class="d-flex justify-content-center">
+<form class = "form-inline" action="./search" method="post" id="searchByAddress">
+  <div class="form-group mx-sm-3 mb-2">
+    {% csrf_token %}
+    <input name="address" value="{{address}}" style="width:400px"/>
+  </div>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<form class = "form-inline" action="./portfolio_search" method="post" id="searchByOwner">
+  <div class="form-group mx-sm-3 mb-2">
+    {% csrf_token %}
+    <input name="name" value="{{name}}" style="width:400px"/>
+  </div>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+</div>
+{% endblock content %}
