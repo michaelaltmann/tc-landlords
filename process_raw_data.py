@@ -281,6 +281,7 @@ def process_parcels():
     print("Writing to data/gen/clean_grouped_rental_parcels.zip")
 
     geo_to_zip(allAddresses, "clean_grouped_rental_parcels", "data/gen/clean_grouped_rental_parcels") 
+    allAddresses.drop(columns=['geometry']).to_csv('data/gen/clean_grouped_rental_parcels.csv')
     print("Writing to data/gen/tags.csv")
     tags.to_csv('data/gen/tags.csv', mode='w')
 

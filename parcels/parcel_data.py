@@ -51,8 +51,15 @@ class ParcelData:
             print('** Loading parcels **')
             tic = time.perf_counter()
             cwd = os.getcwd()
-            adls.download_file('clean_grouped_rental_parcels.zip')
-            parcels = geopandas.read_file(f'data/gen/clean_grouped_rental_parcels.zip')
+# Loading a shape file is an order of magnitude slower that csv.
+# We can live with LAT, LON and no geometry
+#            adls.download_file('clean_grouped_rental_parcels.zip')
+#            parcels = geopandas.read_file(f'data/gen/clean_grouped_rental_parcels.zip')
+ 
+            adls.download_file('clean_grouped_rental_parcels.csv')
+            parcels = pd.read_csv(f'data/gen/clean_grouped_rental_parcels.csv', index_col=0,
+                                   low_memory=False,dtype={'phone':np.str, 'PID': np.str})
+
             toc = time.perf_counter()
             print(f"Loaded parcels in {toc - tic:0.4f} seconds")
             return parcels.set_index(ParcelData.COLUMNS.keyCol)

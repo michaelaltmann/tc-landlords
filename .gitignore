@@ -135,5 +135,8 @@ dmypy.json
 .azure/
 /staticfiles/
 
-MacOS
+# MacOS
 .DS_Store
+
+# Ignore raw data so we don't bloat the repo
+/data/raw
