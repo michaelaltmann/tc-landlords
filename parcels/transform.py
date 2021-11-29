@@ -45,13 +45,16 @@ def cleanAddressPair(s, s2):
 
 def cleanName(s):
     if isinstance(s, str):
-        s = s.replace('\n', ' ').lower().strip()
-        s = re.sub(r'[,\.;\-]', ' ', s)
-        s = re.sub(r'( |,)+(l\.?){1,3}c$', '', s)
+        s = s.replace('\n', ' ').lower()
+        s = re.sub(r'[,\.;\-]', ' ', s) # turn punctuation into spaces
+        s = re.sub(r'\s+', ' ', s) ## collapes multiple white spaces
+
+        s = re.sub(r'( |,)+(l ?){1,3}c( |$)', '', s) # Remove LLC and its variants
         s = re.sub(r'llp$', '', s)
         s = re.sub(r'ltd$', '', s)
         s = re.sub(r'inc$', '', s)
-        s = re.sub(r'\s+', ' ', s)
+        s  = re.sub(r'apts?( |$)', 'apartments ', s)
+        s = s.strip() 
         return s
     else:
         if (not pd.isnull(s)):

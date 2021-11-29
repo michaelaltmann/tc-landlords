@@ -11,6 +11,7 @@ import util.adls as adls
 
 
 class ParcelData:
+    DOWNLOAD = True
     singleton = None
     class COLUMNS((object)):
         keyCol = 'GLOBAL_ID'
@@ -22,7 +23,8 @@ class ParcelData:
         LON = 'LON'
         NUM_UNITS = 'NUM_UNITS'
         SALE_DATE = 'SALE_DATE'
-        NAMES = 'NAMES'
+        NAMES = 'NAMES'  #all names tagged to this parcel
+        PORTFOLIO_NAMES = 'PORTFOLIO_NAMES' # all names tagged to any parcel in the same portfolio
         PORT_ID = 'PORT_ID'
         PORT_SZ = 'PORT_SZ'
         LCNS_APPL = 'LCNS_APPL'
@@ -37,12 +39,15 @@ class ParcelData:
 
     class __ParcelData:
         def __init__(self):
-            self._allPortfolios = None
+            self._portfolios = None
             self._parcels = None
             self._tags = None
 
         @property
         def parcels(self):
+            """
+            Dataframe indexed by GlobalId with many intrinsic attributes of the parcel
+            """
             if self._parcels is None:
                 self._parcels = self.getParcels()
             return self._parcels
@@ -56,16 +61,21 @@ class ParcelData:
 #            adls.download_file('clean_grouped_rental_parcels.zip')
 #            parcels = geopandas.read_file(f'data/gen/clean_grouped_rental_parcels.zip')
  
-            adls.download_file('clean_grouped_rental_parcels.csv')
-            parcels = pd.read_csv(f'data/gen/clean_grouped_rental_parcels.csv', index_col=0,
+            if ParcelData.DOWNLOAD:
+                 adls.download_file('clean_grouped_rental_parcels.csv')
+            parcels = pd.read_csv(f'data/gen/clean_grouped_rental_parcels.csv', index_col="GLOBAL_ID",
                                    low_memory=False,dtype={'phone':np.str, 'PID': np.str})
-
+            parcels[ParcelData.COLUMNS.NAMES] = parcels[ParcelData.COLUMNS.NAMES].str.replace('~','; ', regex=False)
             toc = time.perf_counter()
             print(f"Loaded parcels in {toc - tic:0.4f} seconds")
-            return parcels.set_index(ParcelData.COLUMNS.keyCol)
+            return parcels
 
         @property
         def tags(self):
+            """
+            Dataframe indexed by GlobalId (which may repeat) that has tags
+            associated with each parcel
+            """
             if self._tags is None:
                 self._tags = self.getTags()
             return self._tags
@@ -73,37 +83,38 @@ class ParcelData:
         def getTags(self):
             print('** Loading tags **')
             tic = time.perf_counter()
-            adls.download_file('tags.csv')
-            tags = pd.read_csv('data/gen/tags.csv', index_col=0,
+            if ParcelData.DOWNLOAD:
+                adls.download_file('tags.csv')
+            tags = pd.read_csv('data/gen/tags.csv', index_col="GLOBAL_ID",
                                    low_memory=False)
             toc = time.perf_counter()
             print(f"Loaded tags in {toc - tic:0.4f} seconds")
             return tags
 
         @property
-        def allPortfolios(self):
-            if self._allPortfolios is None:
-                self._allPortfolios = self.getAllPortfolios()
-            return self._allPortfolios
+        def portfolios(self):
+            if self._portfolios is None:
+                self._portfolios = self.getPortfolios()
+            return self._portfolios
 
-        def getAllPortfolios(self):
+
+
+        def getPortfolios(self):
+            print("** Loading portfolios **")
             tic = time.perf_counter()
-            portfolios = self.parcels.groupby(ParcelData.COLUMNS.PORT_ID)[[
-                ParcelData.COLUMNS.NAMES,  ParcelData.COLUMNS.PORT_SZ]].agg({
-                    ParcelData.COLUMNS.PORT_SZ: min,
-                    ParcelData.COLUMNS.NAMES: lambda s: '; '.join(list(set(s.dropna())))
-                })
-            portfolios = portfolios.reset_index().sort_values(
-                by= ParcelData.COLUMNS.PORT_SZ, ascending=False)
-            allPortfolios = portfolios
-            print(f"All Portfolios\n{allPortfolios}")
+            if ParcelData.DOWNLOAD:
+                adls.download_file('portfolios.csv')
+            portfolios = pd.read_csv('data/gen/portfolios.csv', index_col="PORT_ID",
+                                   low_memory=False)
+            portfolios[ParcelData.COLUMNS.PORTFOLIO_NAMES] = portfolios[ParcelData.COLUMNS.PORTFOLIO_NAMES].str.replace('~', '; ', regex=False)
+            print(f"All Portfolios\n{portfolios}")
             toc = time.perf_counter()
             print(f"Loaded all portfolios in {toc - tic:0.4f} seconds")
-            return allPortfolios
+            return portfolios
 
 
 if __name__ == "__main__":
     parcels = ParcelData().parcels
     print(parcels.head())
-    portfolios = ParcelData().allPortfolios
+    portfolios = ParcelData().portfolios
     print(portfolios.head())

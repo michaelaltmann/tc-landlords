@@ -9,8 +9,8 @@
             {{ details }}
         </pre>
     </p>
-    {% if violations %}
-
+    
+    <h3> Tags</h3>
     <table class="table-sm">
         <thead>
             <th>Tag</th>
@@ -29,6 +29,8 @@
     {% endfor %}
         </tbody>
     </table>
+
+    {% if violations %}
 
     <h3>Violations ({{violations|length}})</h3>
     <table class="table-sm">

@@ -1,10 +1,10 @@
 asgiref==3.2.10
 attrs==21.2.0
-azure-core==1.19.0
-azure-storage-blob==12.9.0
-azure-storage-file-datalake==12.5.0
+azure-core
+azure-storage-blob
+azure-storage-file-datalake
 certifi==2021.5.30
-cffi==1.15.0
+cffi
 charset-normalizer==2.0.7
 click==8.0.1
 click-plugins==1.1.1
@@ -14,7 +14,7 @@ Django==3.1
 django-environ==0.4.5
 Fiona==1.8.20
 geopandas==0.9.0
-idna==3.3
+idna
 isodate==0.6.0
 msrest==0.6.21
 munch==2.5.0

@@ -22,6 +22,11 @@ class ViolationData:
 
         @property
         def violations(self):
+            """
+            Dataframe with just row index with a row
+            for each violoation.  The key to the row is the address, 
+            which corresponds roughly, but not precisely, to that parcel
+            """
             if self._violations is None:
                 self._violations = self.getViolations()
             return self._violations
@@ -35,8 +40,9 @@ class ViolationData:
 
         def getViolations(self):
             print('** Loading violations **')
-            adls.download_file('violations.csv')
-            df = pd.read_csv('data/gen/violations.csv')
+            if ParcelData.DOWNLOAD:
+                adls.download_file('violations.csv')
+            df = pd.read_csv('data/gen/violations.csv', index_col = None)
             return df
 
     

@@ -140,3 +140,6 @@ dmypy.json
 
 # Ignore raw data so we don't bloat the repo
 /data/raw
+
+# Ignore generated data because we store it in ADLS
+/data/gen

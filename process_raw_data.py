@@ -99,9 +99,12 @@ def buildMetroGISAbbrevAddress(row):
     return s.upper()
 
 
-def listOfUniqueStrings(*strings):
-    trimmedStrings = [s.strip() for s in strings if s and isinstance(s, str) and s.strip() and len(s.strip())>0]
-    return "; ".join(list(set(trimmedStrings)))
+def listOfUniqueStrings(series):
+    strings = series.dropna().tolist()
+    trimmedStrings = [s.strip() for s in strings if isinstance(s, str) and s.strip() and len(s.strip())>0]
+    trimmedStrings = list(set(trimmedStrings))
+    trimmedStrings.sort()
+    return "~".join(trimmedStrings)
 
 def geo_to_zip(gdf, name, zip_path):
     '''
@@ -162,6 +165,12 @@ def loadStPaulLicense():
                      low_memory=False)
     return df
 
+def loadSectState():
+    path = 'data/raw/SectState/2729_20211010_W_UPDATE_Job21_RunOn20211011.CSV'
+    df = pd.read_csv(path, index_col=False, encoding = "ISO-8859-1",
+                     low_memory=False)
+    return df[['Business Name', "Address 1","Address 2","City","Region Code","Party Full Name"]]
+
 # return the first address that has a number in it
 def selectAddress(addressList):
     a = next((s for s in addressList if isinstance(
@@ -180,11 +189,16 @@ def add_tags(tags, df, source_type, tag_type):
     return pd.concat([tags,df[[COLUMNS.keyCol,'tag_type','tag_value','source_type', 'source_value']]], axis=0) 
 
 def createGroups():
+    USE_SECT_STATE = False
     # Load data
     tc_parcels = loadMetroGISParcels()
     mpls_licenses = loadMplsLicense()
     mpls_licenses = clean(mpls_licenses)
     mpls_licenses['address'] = mpls_licenses['address'] + ', MINNEAPOLIS'
+    if USE_SECT_STATE:
+        sect_state = loadSectState()
+        sect_state['clean_business_name'] = sect_state['Business Name'].apply(cleanName)
+        sect_state['clean_party_name'] = sect_state['Party Full Name'].apply(cleanName)
 
     # Get all the addresses
     allKeys = pd.concat(
@@ -222,16 +236,32 @@ def createGroups():
     tags = add_tags(tags, df, 'OWNER_NAME', 'name')
     print (tags.tail())
 
+    # Add party name where business name matches owner name
+    if USE_SECT_STATE:
+        df2 = pd.merge(left=df, left_on='tag_value', right=sect_state, right_on='clean_business_name')
+        df2 = df2[[COLUMNS.keyCol,'Party Full Name','clean_party_name']]
+        df2 = df2.rename(columns= {'Party Full Name': 'source_value', 'clean_party_name': 'tag_value'}) 
+        tags = add_tags(tags, df2, 'PARTY_NAME', 'name')
+        print (tags.tail())
+
     df = tc_parcels[[COLUMNS.keyCol,'TAX_NAME']].rename(columns={'TAX_NAME':'source_value'}).copy()
     df['tag_value'] = df['source_value'].apply(cleanName)
     tags = add_tags(tags, df, 'TAX_NAME', 'name')
     print (tags.tail())
 
+    # Add party name where business name matches taxpayer name
+    if USE_SECT_STATE:
+        df2 = pd.merge(left=df, left_on='tag_value', right=sect_state, right_on='clean_business_name')
+        df2 = df2[[COLUMNS.keyCol,'Party Full Name','clean_party_name']]
+        df2 = df2.rename(columns= {'Party Full Name': 'source_value', 'clean_party_name': 'tag_value'}) 
+        tags = add_tags(tags, df2, 'PARTY_NAME', 'name')
+        print (tags.tail())
 
     df = tc_parcels[[COLUMNS.keyCol,'TAX_ADD_L1']].rename(columns={'TAX_ADD_L1':'source_value'}).copy()
     df['tag_value'] = df['source_value'].apply(cleanName)
     tags = add_tags(tags, df, 'Taxpayer address', 'address')
     print (tags.tail())
+
 
     # df = mpls_licenses[[keyCol,'xAddress', 'ownerAddre','ownerAdd_1']].rename(columns={'xAddress':'tag_value'})
     # df['source_value'] = df.apply(lambda row: f"{row['ownerAddre'] if pd.notna(row['ownerAddre']) else ''} {(' ' + row['ownerAdd_1']) if pd.notna(row['ownerAdd_1']) else ''}", axis=1)
@@ -269,9 +299,12 @@ def process_parcels():
 
     allAddresses[COLUMNS.LAT] = allAddresses['geometry'].centroid.y
     allAddresses[COLUMNS.LON] = allAddresses['geometry'].centroid.x
-
-    allAddresses[COLUMNS.NAMES] = allAddresses.apply(lambda row: listOfUniqueStrings(
-        row['LCNS_OWNR'], row['LCNS_APPL'], row['OWNER_NAME'], row['TAX_NAME']), axis=1)
+    
+    name_tags = tags[tags['tag_type'] == 'name'][['source_value']]
+    parcel_names = name_tags.groupby(name_tags.index).agg( listOfUniqueStrings )
+    parcel_names = parcel_names.rename(columns={'source_value': COLUMNS.NAMES})
+     
+    allAddresses = allAddresses.join(parcel_names, how = 'left')
     for col in ['OWNER_NAME', 'TAX_NAME']:
         allAddresses[col] = allAddresses[col].str.strip()
 
@@ -285,16 +318,21 @@ def process_parcels():
     print("Writing to data/gen/tags.csv")
     tags.to_csv('data/gen/tags.csv', mode='w')
 
-    # Informational 
+    name_tags = tags[tags['tag_type'] == 'name']
+    name_tags = name_tags.join(allAddresses[[COLUMNS.PORT_ID]], how='inner').set_index(COLUMNS.PORT_ID)[['source_value']]
+    portfolio_names = name_tags.groupby(COLUMNS.PORT_ID).agg( listOfUniqueStrings )
+    portfolio_names = portfolio_names.rename(columns={'source_value': COLUMNS.PORTFOLIO_NAMES})
+  
+
     portfolios = allAddresses.groupby(COLUMNS.PORT_ID)[[
-        COLUMNS.NAMES,  COLUMNS.PORT_SZ]].agg({
-            COLUMNS.PORT_SZ: min,
-            COLUMNS.NAMES: lambda s: listOfUniqueStrings(s.tolist()),
+          COLUMNS.PORT_SZ]].agg({
+            COLUMNS.PORT_SZ: min
         })
+    portfolios = portfolios.join(portfolio_names, how='left')
     portfolios = portfolios.sort_values(
         by=COLUMNS.PORT_SZ, ascending=False)
-    allPortfolios = portfolios.reset_index()
-    print(allPortfolios.head(20))
+    portfolios.to_csv('data/gen/portfolios.csv')
+    print(portfolios.reset_index().head(20))
 
 def read_violations():
     all_files = [
@@ -319,10 +357,10 @@ def read_violations():
     df[COLUMNS.ADDRESS] = df[COLUMNS.ADDRESS].apply( lambda s: expandAddress(s).upper() + ", MINNEAPOLIS")
     toc = time.perf_counter()
     print(f"Violations addresses normalized in in {toc - tic:0.4f} seconds")
-    return df    
+    return df   
 
 def process_violations():
-    violations = read_violations()
+    violations = read_violations().set_index(COLUMNS.ADDRESS)
     violations.to_csv('data/gen/violations.csv', mode='w')
 
 if __name__ == "__main__":

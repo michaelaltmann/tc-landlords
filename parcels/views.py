@@ -14,8 +14,11 @@ def get_addresses_for_key(key):
     Handle the slight chance that there are multiple addresses
     for the same parcel
     '''
-    address = parcelData.parcels.loc[key][COLUMNS.ADDRESS]
-    return [address]
+    addresses =  parcelData.parcels.loc[key][COLUMNS.ADDRESS]
+    if isinstance(addresses,str):
+        return [addresses]
+    else:
+        return addresses.tolist()
 
 
 def countViolations(key):
@@ -169,29 +172,22 @@ def portfolio_search(request):
         name = request.GET.get('name', "")
     elif request.method == "POST":
         name = request.POST.get('name', "")
-    if name:
-        searchTerms = name.split(" ")
-        patterns = ["(" + r"(^|\s)"+word.replace("*", r"\S*").replace("_", ".*") +
-                    r"($|\s)" + ")" for word in searchTerms]
-        pattern = "|".join(patterns)
-        print(pattern)
-        matchingOwnerName = parcels[parcels[COLUMNS.NAMES].str.contains(
-            pattern, na=False, case=False, regex=True)]
-        matchingApplicantName = parcels[parcels[COLUMNS.LCNS_APPL].str.contains(
-            pattern, na=False, case=False, regex=True)]
-        matches = pd.concat([matchingOwnerName, matchingApplicantName])
-    else:
+    if not name:
         return redirect(f"/parcels/portfolios")
+    searchTerms = name.split(" ")
+    patterns = ["(" + r"(^|\s)"+word.replace("*", r"\S*").replace("_", ".*") +
+                r"($|\s)" + ")" for word in searchTerms]
+    pattern = "|".join(patterns)
+    print(pattern)
+    matchingTags = parcelData.tags[ parcelData.tags['tag_value'].str.contains(pattern, na=False, case=False, regex=True) ]
 
-    portfolios = matches.groupby(COLUMNS.PORT_ID)[[
-        COLUMNS.NAMES, 'LCNS_APPL', COLUMNS.PORT_SZ]].agg({
-            COLUMNS.PORT_SZ: min,
-            COLUMNS.NAMES: lambda s: '; '.join(list(set(s.dropna()))),
-        }).reset_index()
+    portfolio_ids = parcels.join(matchingTags, how="inner").drop_duplicates([COLUMNS.PORT_ID])[COLUMNS.PORT_ID].tolist()
+
+    matchingPortfolios = parcelData.portfolios.loc[portfolio_ids]
 
     context = {
         'name': name,
-        'portfolios': portfolios.to_dict(orient='records')
+        'portfolios': matchingPortfolios.reset_index().to_dict(orient='records')
     }
     return render(request, 'parcels/portfolio_search.html', context)
 
@@ -200,9 +196,14 @@ def portfolios(request):
     """
     Display all portfolios
     """
-    portfolios = parcelData.allPortfolios
+    if request.method == "GET":
+        limit = request.GET.get('limit', '100')
+    elif request.method == "POST":
+        limit = request.POST.get('limit', '100')
+    limit = int(limit)
+    portfolios = parcelData.portfolios
     context = {
-        'portfolios': portfolios.to_dict(orient='records')
+        'portfolios': portfolios.head(limit).reset_index().to_dict(orient='records')
     }
     return render(request, 'parcels/portfolios.html', context)
 
