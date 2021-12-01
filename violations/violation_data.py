@@ -40,9 +40,8 @@ class ViolationData:
 
         def getViolations(self):
             print('** Loading violations **')
-            if ParcelData.DOWNLOAD:
-                adls.download_file('violations.csv')
-            df = pd.read_csv('data/gen/violations.csv', index_col = None)
+            url = ParcelData.get_data_url('violations.csv')
+            df = pd.read_csv(url, index_col = None)
             return df
 
     

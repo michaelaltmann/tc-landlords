@@ -12,6 +12,11 @@ import util.adls as adls
 
 class ParcelData:
     DOWNLOAD = True
+    STORAGE_ACCNT='tclandlords'
+    CONTAINER='tc-landlords-data'
+    remote_directory='data/gen'
+    local_directory = 'data/gen'
+    
     singleton = None
     class COLUMNS((object)):
         keyCol = 'GLOBAL_ID'
@@ -37,6 +42,13 @@ class ParcelData:
     def __getattr__(self, name):
         return getattr(self.singleton, name)
 
+    def get_data_url(file_name):
+        if ParcelData.DOWNLOAD:
+            url=f"https://{ParcelData.STORAGE_ACCNT}.blob.core.windows.net/{ParcelData.CONTAINER}/{ParcelData.remote_directory}/{file_name}" 
+        else:
+            url = f'{ParcelData.local_directory}/{file_name}'
+        return url 
+
     class __ParcelData:
         def __init__(self):
             self._portfolios = None
@@ -61,9 +73,9 @@ class ParcelData:
 #            adls.download_file('clean_grouped_rental_parcels.zip')
 #            parcels = geopandas.read_file(f'data/gen/clean_grouped_rental_parcels.zip')
  
-            if ParcelData.DOWNLOAD:
-                 adls.download_file('clean_grouped_rental_parcels.csv')
-            parcels = pd.read_csv(f'data/gen/clean_grouped_rental_parcels.csv', index_col="GLOBAL_ID",
+
+            url = ParcelData.get_data_url('clean_grouped_rental_parcels.csv')    
+            parcels = pd.read_csv(url, index_col="GLOBAL_ID",
                                    low_memory=False,dtype={'phone':np.str, 'PID': np.str})
             parcels[ParcelData.COLUMNS.NAMES] = parcels[ParcelData.COLUMNS.NAMES].str.replace('~','; ', regex=False)
             toc = time.perf_counter()
@@ -83,9 +95,8 @@ class ParcelData:
         def getTags(self):
             print('** Loading tags **')
             tic = time.perf_counter()
-            if ParcelData.DOWNLOAD:
-                adls.download_file('tags.csv')
-            tags = pd.read_csv('data/gen/tags.csv', index_col="GLOBAL_ID",
+            url = ParcelData.get_data_url('tags.csv')  
+            tags = pd.read_csv(url, index_col="GLOBAL_ID",
                                    low_memory=False)
             toc = time.perf_counter()
             print(f"Loaded tags in {toc - tic:0.4f} seconds")
@@ -102,9 +113,8 @@ class ParcelData:
         def getPortfolios(self):
             print("** Loading portfolios **")
             tic = time.perf_counter()
-            if ParcelData.DOWNLOAD:
-                adls.download_file('portfolios.csv')
-            portfolios = pd.read_csv('data/gen/portfolios.csv', index_col="PORT_ID",
+            url = ParcelData.get_data_url('portfolios.csv')
+            portfolios = pd.read_csv(url, index_col="PORT_ID",
                                    low_memory=False)
             portfolios[ParcelData.COLUMNS.PORTFOLIO_NAMES] = portfolios[ParcelData.COLUMNS.PORTFOLIO_NAMES].str.replace('~', '; ', regex=False)
             print(f"All Portfolios\n{portfolios}")
