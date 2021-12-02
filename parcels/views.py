@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 import re
 import pandas as pd
+import numpy as np
 from .transform import cleanName, street_abvs
 from violations.violation_data import ViolationData
 from .parcel_data import ParcelData
@@ -140,16 +141,12 @@ def portfolio_tags(request):
     samePortfolio = parcels.loc[parcels[COLUMNS.PORT_ID]
                              == portfolioId][[COLUMNS.ADDRESS,'licenseNum', 'phone', 'email', COLUMNS.NAMES]]
     samePortfolio = samePortfolio.sort_values(by=COLUMNS.ADDRESS)
-    tags = parcelData.tags.loc[samePortfolio.index.tolist()]
+    tags = parcelData.tags.loc[samePortfolio.index.tolist()].reset_index().drop(columns=['source_type', 'source_value']).drop_duplicates().set_index(COLUMNS.keyCol)
     tags['tag_type_value'] = tags['tag_type'] + '|' + tags['tag_value']
     grouped_tags = tags.join(samePortfolio, how='left').reset_index().groupby(['tag_type','tag_value'])
-    tag_freq = grouped_tags[COLUMNS.keyCol].agg(['count']).reset_index()
-    shared_tag_groups = tag_freq[tag_freq['count']>1]
-    shared_tag_groups['tag_type_value'] = shared_tag_groups['tag_type'] + '|' + shared_tag_groups['tag_value']
-    shared_tag_groups = shared_tag_groups.reset_index().drop(columns=['index'])
-    # hack
- #   selected_tags_ids = (shared_tag_groups['tag_type_value'].iloc[1:10]).tolist()
-
+    tag_freq = grouped_tags[COLUMNS.keyCol, 'tag_type_value'].agg({COLUMNS.keyCol: 'count', 'tag_type_value': np.min})
+    tag_freq = tag_freq.rename(columns = {COLUMNS.keyCol: 'parcels'})
+    shared_tag_groups = tag_freq[tag_freq['parcels']>1]
     shared_tag_groups['checked'] = shared_tag_groups['tag_type_value'].isin(selected_tag_ids)
     
     selected_tags = tags[ tags['tag_type_value'].isin(selected_tag_ids) ]
@@ -158,8 +155,7 @@ def portfolio_tags(request):
     uf = UnionFind()
     for id in selected_tags.index.unique(): #parcel IDs
         uf.add(id)
-    g = grouped_tags[COLUMNS.keyCol]
-    for tag_type_and_value, group in g:
+    for tag_type_and_value, group in grouped_tags[COLUMNS.keyCol]:
         rows = group.tolist()
         if len(rows) > 1:
             first = rows[0]
@@ -176,11 +172,19 @@ def portfolio_tags(request):
     
     subgroup_count = len(uf.components())
     unassigned_count = len(samePortfolio[samePortfolio['portfolio_subgroup']==0].index)
+
+    unmatched_tags = tags[ ~ tags['tag_type_value'].isin(selected_tag_ids) ]
+    selected_parcel_ids = selected_tags.index.unique()
+    unmatched_tags = unmatched_tags[ ~ unmatched_tags.index.isin(selected_parcel_ids)]
+    grouped_unmatched_tags = unmatched_tags.reset_index().groupby(['tag_type','tag_value'])[[COLUMNS.keyCol]].agg('count').rename(columns={COLUMNS.keyCol: 'unassigned'})
+    shared_tag_groups = shared_tag_groups.join(grouped_unmatched_tags)
+    shared_tag_groups['unassigned'] = shared_tag_groups['unassigned'].fillna(0).astype('int')
     colors = ['black', 'red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
     context = {
         'portfolioId': portfolioId,
         'shared_tags': shared_tag_groups.reset_index().to_dict(orient='records'),
         'samePortfolio': samePortfolio.reset_index().to_dict(orient='records'),
+
         'colors': colors,
         'unassigned_count': unassigned_count,
         'subgroup_count': subgroup_count

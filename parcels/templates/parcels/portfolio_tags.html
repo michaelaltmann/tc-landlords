@@ -66,7 +66,8 @@ function unhighlight(t) {
             <th>Selected</th>
             <th>Tag Type</th>
             <th>Tag Value</th>
-            <th>Count</th>
+            <th>Parcels</th>
+            <th>Ungrouped parcels</th>
         </thead>
         <tbody>
     {% for tag in shared_tags %}
@@ -74,7 +75,8 @@ function unhighlight(t) {
                 <td > <input type="checkbox" name="selected_tag_ids[]" value="{{tag.tag_type_value}}" {% if tag.checked %} checked {% endif %} }/> </td>
                 <td >{{tag.tag_type }}</td>
                 <td >{{tag.tag_value }}</td>
-                <td >{{tag.count}}</td>
+                <td >{{tag.parcels}}</td>
+                <td > {% if tag.unassigned %} {{tag.unassigned  }} {% endif %} </td>
             </tr>
     {% endfor %}
         </tbody>
@@ -82,7 +84,7 @@ function unhighlight(t) {
     <input type="submit" name="OK">
 </form>
 
-<h3> Parcels {{subgroup_count}} subgroups and  {{unassigned_count}} unassigned parcels</h3>
+<h3> Parcels {{subgroup_count}} subgroups and  {{unassigned_count}} ungrouped parcels</h3>
 <table class="table">
     <thead>
         <th>Address</td>
@@ -93,7 +95,7 @@ function unhighlight(t) {
 {% for parcel in samePortfolio %}
     <tr>
         <td ><a href="property?key={{parcel.GLOBAL_ID}}" >{{parcel.ADDRESS }}</a></td>
-        <td class="subgroup_{{parcel.portfolio_subgroup}}">{{parcel.portfolio_subgroup }}</a></td>
+        <td class="subgroup_{{parcel.portfolio_subgroup}}"> {% if parcel.portfolio_subgroup %} {{parcel.portfolio_subgroup }} {% endif %} </a></td>
         <td >{{parcel.NAMES }}</td>
     </tr>
     {% endfor %}
