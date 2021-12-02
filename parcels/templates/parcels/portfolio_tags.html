@@ -1,0 +1,104 @@
+<!-- prettier-ignore-start -->
+{% extends 'base.html' %}
+{% block title %}
+Portfolio 
+{% endblock title %}
+
+{% block content %}
+<!-- prettier-ignore-end -->
+<script>
+function highlight(tagType, tagValue) {
+    $('#tags > tbody > tr').each((i, el) => {
+        const row = $(el)
+        const tagTypeEl = row.children('td')[1] 
+        const tagValueEl = row.children('td')[2] 
+        if( tagTypeEl.innerText == tagType && tagValueEl.innerText == tagValue) {
+            $('td', row).addClass('highlighted')  
+        }
+    })
+}
+function unhighlight(t) {
+    $( "#tags > tbody > tr > td" ).removeClass( "highlighted" );
+}
+</script>
+<style>
+.highlighted {
+    background-color: yellow
+}
+.hidden {
+    display: none;
+}
+.subgroup_1 {
+     background-color: #a6cee3
+}
+.subgroup_2 {
+     background-color: #1f78b4
+}
+.subgroup_3 {
+     background-color: #b2df8a
+}
+.subgroup_4 {
+     background-color: #33a02c
+}
+.subgroup_5 {
+     background-color: #fb9a99
+}
+.subgroup_6 {
+     background-color: #e31a1c
+}
+.subgroup_7 {
+     background-color: #fdbf6f
+}
+.subgroup_8 {
+     background-color: #ff7f00
+}
+</style>
+<h3>Portfolio {{PORT_ID}}</h3>
+<a href="map?PORT_ID={{PORT_ID}}">Map View</a>
+ | <a href="portfolio?PORT_ID={{portfolioId}}">List View</a> | <span>Tag View</span> 
+
+<h3> Shared Tags </h3>
+<form method="post">
+    {% csrf_token %}
+    <input type='hidden' name="PORT_ID" value="{{portfolioId}}"/>
+    <table class="table-sm" id='tags'>
+        <thead>
+            <th>Selected</th>
+            <th>Tag Type</th>
+            <th>Tag Value</th>
+            <th>Count</th>
+        </thead>
+        <tbody>
+    {% for tag in shared_tags %}
+            <tr>
+                <td > <input type="checkbox" name="selected_tag_ids[]" value="{{tag.tag_type_value}}" {% if tag.checked %} checked {% endif %} }/> </td>
+                <td >{{tag.tag_type }}</td>
+                <td >{{tag.tag_value }}</td>
+                <td >{{tag.count}}</td>
+            </tr>
+    {% endfor %}
+        </tbody>
+    </table>
+    <input type="submit" name="OK">
+</form>
+
+<h3> Parcels {{subgroup_count}} subgroups and  {{unassigned_count}} unassigned parcels</h3>
+<table class="table">
+    <thead>
+        <th>Address</td>
+        <th>Subgroup</th>
+        <th>Names</th>
+    </thead>
+    <tbody>
+{% for parcel in samePortfolio %}
+    <tr>
+        <td ><a href="property?key={{parcel.GLOBAL_ID}}" >{{parcel.ADDRESS }}</a></td>
+        <td class="subgroup_{{parcel.portfolio_subgroup}}">{{parcel.portfolio_subgroup }}</a></td>
+        <td >{{parcel.NAMES }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock content %}

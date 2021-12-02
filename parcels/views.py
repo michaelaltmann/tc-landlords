@@ -124,6 +124,69 @@ def portfolio(request):
     }
     return render(request, 'parcels/portfolio.html', context)
 
+def portfolio_tags(request):
+    """
+    Display the properties and shared tags
+    """
+    parcels = parcelData.parcels
+    if request.method == "GET":
+        portfolioId = request.GET[COLUMNS.PORT_ID]
+        selected_tag_ids = []
+    elif request.method == "POST":
+        portfolioId = request.POST[COLUMNS.PORT_ID]
+        selected_tag_ids = request.POST.getlist('selected_tag_ids[]', [])
+    
+    portfolioId = int(portfolioId)
+    samePortfolio = parcels.loc[parcels[COLUMNS.PORT_ID]
+                             == portfolioId][[COLUMNS.ADDRESS,'licenseNum', 'phone', 'email', COLUMNS.NAMES]]
+    samePortfolio = samePortfolio.sort_values(by=COLUMNS.ADDRESS)
+    tags = parcelData.tags.loc[samePortfolio.index.tolist()]
+    tags['tag_type_value'] = tags['tag_type'] + '|' + tags['tag_value']
+    grouped_tags = tags.join(samePortfolio, how='left').reset_index().groupby(['tag_type','tag_value'])
+    tag_freq = grouped_tags[COLUMNS.keyCol].agg(['count']).reset_index()
+    shared_tag_groups = tag_freq[tag_freq['count']>1]
+    shared_tag_groups['tag_type_value'] = shared_tag_groups['tag_type'] + '|' + shared_tag_groups['tag_value']
+    shared_tag_groups = shared_tag_groups.reset_index().drop(columns=['index'])
+    # hack
+ #   selected_tags_ids = (shared_tag_groups['tag_type_value'].iloc[1:10]).tolist()
+
+    shared_tag_groups['checked'] = shared_tag_groups['tag_type_value'].isin(selected_tag_ids)
+    
+    selected_tags = tags[ tags['tag_type_value'].isin(selected_tag_ids) ]
+ 
+    from parcels.union_find import UnionFind
+    uf = UnionFind()
+    for id in selected_tags.index.unique(): #parcel IDs
+        uf.add(id)
+    g = grouped_tags[COLUMNS.keyCol]
+    for tag_type_and_value, group in g:
+        rows = group.tolist()
+        if len(rows) > 1:
+            first = rows[0]
+            for other in rows[1:]:
+                if (first in uf and other in uf):
+                    uf.union(first, other)
+
+    samePortfolio['portfolio_subgroup'] = 0
+    portfolio_subgroup = 0
+    for component in uf.components():
+        portfolio_subgroup = portfolio_subgroup +1
+        for id in component:
+            samePortfolio.loc[id,'portfolio_subgroup'] = portfolio_subgroup
+    
+    subgroup_count = len(uf.components())
+    unassigned_count = len(samePortfolio[samePortfolio['portfolio_subgroup']==0].index)
+    colors = ['black', 'red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
+    context = {
+        'portfolioId': portfolioId,
+        'shared_tags': shared_tag_groups.reset_index().to_dict(orient='records'),
+        'samePortfolio': samePortfolio.reset_index().to_dict(orient='records'),
+        'colors': colors,
+        'unassigned_count': unassigned_count,
+        'subgroup_count': subgroup_count
+    }
+    return render(request, 'parcels/portfolio_tags.html', context)
+
 
 def search(request):
     """
@@ -190,6 +253,7 @@ def portfolio_search(request):
         'portfolios': matchingPortfolios.reset_index().to_dict(orient='records')
     }
     return render(request, 'parcels/portfolio_search.html', context)
+
 
 
 def portfolios(request):
