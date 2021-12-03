@@ -84,7 +84,8 @@ function unhighlight(t) {
     <input type="submit" name="OK">
 </form>
 
-<h3> Parcels {{subgroup_count}} subgroups and  {{unassigned_count}} ungrouped parcels</h3>
+<h3> Parcels</h3>
+<h4>  {{subgroup_count}} subgroups and  {{unassigned_count}} ungrouped parcels</h4>
 <table class="table">
     <thead>
         <th>Address</td>
@@ -94,7 +95,12 @@ function unhighlight(t) {
     <tbody>
 {% for parcel in samePortfolio %}
     <tr>
-        <td ><a href="property?key={{parcel.GLOBAL_ID}}" >{{parcel.ADDRESS }}</a></td>
+        <td ><a href="property?key={{parcel.GLOBAL_ID}}" >{{parcel.ADDRESS }}</a>
+        {% if parcel.tag_value_list %}
+                <br>
+            {{ parcel.tag_value_list|join:", "}}
+        {% endif %}
+        </td>
         <td class="subgroup_{{parcel.portfolio_subgroup}}"> {% if parcel.portfolio_subgroup %} {{parcel.portfolio_subgroup }} {% endif %} </a></td>
         <td >{{parcel.NAMES }}</td>
     </tr>

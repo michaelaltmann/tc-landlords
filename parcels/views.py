@@ -177,13 +177,16 @@ def portfolio_tags(request):
     selected_parcel_ids = selected_tags.index.unique()
     unmatched_tags = unmatched_tags[ ~ unmatched_tags.index.isin(selected_parcel_ids)]
     grouped_unmatched_tags = unmatched_tags.reset_index().groupby(['tag_type','tag_value'])[[COLUMNS.keyCol]].agg('count').rename(columns={COLUMNS.keyCol: 'unassigned'})
+    available_tags = unmatched_tags.reset_index()[[COLUMNS.keyCol, 'tag_value']].groupby(COLUMNS.keyCol).agg(list).rename(columns={'tag_value': 'tag_value_list'})
+    samePortfolio = samePortfolio.join(available_tags)
+    samePortfolio['tag_value_list'] = samePortfolio['tag_value_list'].fillna(0)
     shared_tag_groups = shared_tag_groups.join(grouped_unmatched_tags)
     shared_tag_groups['unassigned'] = shared_tag_groups['unassigned'].fillna(0).astype('int')
     colors = ['black', 'red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
     context = {
         'portfolioId': portfolioId,
         'shared_tags': shared_tag_groups.reset_index().to_dict(orient='records'),
-        'samePortfolio': samePortfolio.reset_index().to_dict(orient='records'),
+        'samePortfolio': samePortfolio.sort_values(by=['portfolio_subgroup']).reset_index().to_dict(orient='records'),
 
         'colors': colors,
         'unassigned_count': unassigned_count,
