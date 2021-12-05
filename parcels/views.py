@@ -165,12 +165,15 @@ def portfolio_tags(request):
 
     samePortfolio['portfolio_subgroup'] = 0
     portfolio_subgroup = 0
-    for component in uf.components():
-        portfolio_subgroup = portfolio_subgroup +1
-        for id in component:
-            samePortfolio.loc[id,'portfolio_subgroup'] = portfolio_subgroup
+    if uf.n_elts>0:
+        for component in uf.components():
+            portfolio_subgroup = portfolio_subgroup +1
+            for id in component:
+                samePortfolio.loc[id,'portfolio_subgroup'] = portfolio_subgroup
     
-    subgroup_count = len(uf.components())
+        subgroup_count = len(uf.components())
+    else:
+        subgroup_count = 0
     unassigned_count = len(samePortfolio[samePortfolio['portfolio_subgroup']==0].index)
 
     unmatched_tags = tags[ ~ tags['tag_type_value'].isin(selected_tag_ids) ]
