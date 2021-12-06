@@ -7,7 +7,7 @@ import geopandas
 
 from pandas.core.frame import DataFrame
 from parcels.union_find import UnionFind
-from parcels.transform import clean, cleanEmail, cleanName, cleanAddressLine, cleanAddressPair, cleanPhone
+from parcels.transform import clean, cleanEmail, cleanName, cleanPhone
 from parcels.parcel_data import ParcelData
 import time
 COLUMNS = ParcelData.COLUMNS
@@ -98,6 +98,59 @@ def buildMetroGISAbbrevAddress(row):
         s = s + ", " + row['POSTCOMM'].strip() 
     return s.upper()
 
+def cleanAddressLine(s):
+    if isinstance(s, str) and s:
+        s = re.sub('\s+', ' ',s).replace('.', '')
+        s = ' ' + s.strip().upper() + ' '
+        s = s.replace(' S E ', ' SE ')
+        s = s.replace(' S W ', ' SW ')
+        s = s.replace(' N E ', ' NE ')
+        s = s.replace(' N W ', ' NW ')
+
+        # Look for addresses like 123Main that need a space inserted
+        match = re.search(r"^([0-9]+)([a-z]+)", s)
+        if match:
+            start = match.span()[0]
+            finish = match.span()[1]
+            streetName = match.group(2)
+            if not streetName in ['TH', 'ST', 'RD', 'ND'] and len(streetName) > 0:
+                s = s[:start] + match.group(1) + \
+                    " " + match.group(2) + s[finish:]
+        words = s.strip().split(' ')
+        words = [expandAbbrev(word) for word in words]
+        address = " ".join(words)
+        return address            
+    else:
+        return s
+
+def cleanAddressList(lines):
+    address = ", ".join([cleanAddressLine(line) for line in lines if isinstance(line,str) and line])
+    return address
+
+def cleanOwnerAddress(row):
+    line1 = cleanAddressLine(row['OWN_ADD_L1'])
+    line2 = cleanAddressLine(row['OWN_ADD_L2'])
+    line3 = cleanAddressLine(row['OWN_ADD_L3'])
+    line4 = cleanAddressLine(row['OWN_ADD_L4'])
+    lines = [line1, line2, line3, line4]
+    return cleanAddressList(lines)
+
+def cleanTaxpayerAddress(row):
+    line1 = cleanAddressLine(row['TAX_ADD_L1'])
+    line2 = cleanAddressLine(row['TAX_ADD_L2'])
+    line3 = cleanAddressLine(row['TAX_ADD_L3'])
+    line4 = cleanAddressLine(row['TAX_ADD_L4'])
+    lines = [line1, line2, line3, line4]
+    return cleanAddressList(lines)
+
+def cleanBusinessAddress(row):
+    line1 = cleanAddressLine(row['Address 1'])
+    line2 = cleanAddressLine(row['Address 2'])
+    line3 = cleanAddressLine(row['City'])
+    line4 = cleanAddressLine(row['Region Code'])
+    lines = [line1, line2, line3, line4]
+    return cleanAddressList(lines)
+
 
 def listOfUniqueStrings(series):
     strings = series.dropna().tolist()
@@ -169,7 +222,7 @@ def loadSectState():
     path = 'data/raw/SectState/2729_20211010_W_UPDATE_Job21_RunOn20211011.CSV'
     df = pd.read_csv(path, index_col=False, encoding = "ISO-8859-1",
                      low_memory=False)
-    return df[['Business Name', "Address 1","Address 2","City","Region Code","Party Full Name"]]
+    return df[['Business Name', "Address 1","Address 2","City","Region Code","Business Party Name Type", "Party Full Name"]]
 
 # return the first address that has a number in it
 def selectAddress(addressList):
@@ -183,13 +236,13 @@ def add_tags(tags, df, source_type, tag_type):
     df['source_type'] = source_type
     df['tag_type'] = tag_type
     df = df.loc[df['tag_value'].notnull() ]
-    df['tag_value'] = df['tag_value'].astype(str)   
-    df = df.loc[~ df['tag_value'].str.isspace() ]
+    df['tag_value'] = df['tag_value'].astype(str).str.strip()   
+    df = df.loc[df['tag_value'] != "" ]
     print(f"Adding {len(df.index)} tags for {source_type}")
     return pd.concat([tags,df[[COLUMNS.keyCol,'tag_type','tag_value','source_type', 'source_value']]], axis=0) 
 
 def createGroups():
-    USE_SECT_STATE = False
+    USE_SECT_STATE = True
     # Load data
     tc_parcels = loadMetroGISParcels()
     mpls_licenses = loadMplsLicense()
@@ -199,6 +252,7 @@ def createGroups():
         sect_state = loadSectState()
         sect_state['clean_business_name'] = sect_state['Business Name'].apply(cleanName)
         sect_state['clean_party_name'] = sect_state['Party Full Name'].apply(cleanName)
+        sect_state['clean_business_address'] = sect_state.apply(cleanBusinessAddress, axis=1)
 
     # Get all the addresses
     allKeys = pd.concat(
@@ -237,11 +291,16 @@ def createGroups():
     print (tags.tail())
 
     # Add party name where business name matches owner name
+    # Only use rows where party name type indicates that the party is Nameholder 
     if USE_SECT_STATE:
-        df2 = pd.merge(left=df, left_on='tag_value', right=sect_state, right_on='clean_business_name')
-        df2 = df2[[COLUMNS.keyCol,'Party Full Name','clean_party_name']]
-        df2 = df2.rename(columns= {'Party Full Name': 'source_value', 'clean_party_name': 'tag_value'}) 
-        tags = add_tags(tags, df2, 'PARTY_NAME', 'name')
+        name_holders = sect_state[sect_state['Business Party Name Type'].isin(['NameholderParty Primary Address','Nameholder'])]
+        df2 = pd.merge(left=df, left_on='tag_value', right=name_holders, right_on='clean_business_name')
+        df3 = df2[[COLUMNS.keyCol,'Party Full Name','clean_party_name']]
+        df3 = df3.rename(columns= {'Party Full Name': 'source_value', 'clean_party_name': 'tag_value'}) 
+        tags = add_tags(tags, df3, 'PARTY_NAME', 'name')
+        df3 = df2[[COLUMNS.keyCol,'Address 1','clean_business_address']]
+        df3 = df3.rename(columns= {'Address 1': 'source_value', 'clean_business_address': 'tag_value'}) 
+        tags = add_tags(tags, df3, 'BUSINESS_ADDRESS', 'address')
         print (tags.tail())
 
     df = tc_parcels[[COLUMNS.keyCol,'TAX_NAME']].rename(columns={'TAX_NAME':'source_value'}).copy()
@@ -250,16 +309,28 @@ def createGroups():
     print (tags.tail())
 
     # Add party name where business name matches taxpayer name
+    # Only use rows where party name type indicates that the party is Nameholder 
     if USE_SECT_STATE:
-        df2 = pd.merge(left=df, left_on='tag_value', right=sect_state, right_on='clean_business_name')
-        df2 = df2[[COLUMNS.keyCol,'Party Full Name','clean_party_name']]
-        df2 = df2.rename(columns= {'Party Full Name': 'source_value', 'clean_party_name': 'tag_value'}) 
-        tags = add_tags(tags, df2, 'PARTY_NAME', 'name')
+        name_holders = sect_state[sect_state['Business Party Name Type'].isin(['NameholderParty Primary Address','Nameholder'])]
+        df2 = pd.merge(left=df, left_on='tag_value', right=name_holders, right_on='clean_business_name')       
+        df3 = df2[[COLUMNS.keyCol,'Party Full Name','clean_party_name']]
+        df3 = df3.rename(columns= {'Party Full Name': 'source_value', 'clean_party_name': 'tag_value'}) 
+        tags = add_tags(tags, df3, 'PARTY_NAME', 'name')
+        df3 = df2[[COLUMNS.keyCol,'Address 1','clean_business_address']]
+        df3 = df3.rename(columns= {'Address 1': 'source_value', 'clean_business_address': 'tag_value'}) 
+        tags = add_tags(tags, df3, 'BUSINESS_ADDRESS', 'address')
         print (tags.tail())
 
-    df = tc_parcels[[COLUMNS.keyCol,'TAX_ADD_L1']].rename(columns={'TAX_ADD_L1':'source_value'}).copy()
-    df['tag_value'] = df['source_value'].apply(cleanName)
+    tc_parcels['TAXPAYER_ADDRESS'] = tc_parcels.apply(cleanTaxpayerAddress, axis=1)
+    df = tc_parcels[[COLUMNS.keyCol,'TAXPAYER_ADDRESS']].rename(columns={'TAXPAYER_ADDRESS':'source_value'}).copy()
+    df['tag_value'] = df['source_value']
     tags = add_tags(tags, df, 'Taxpayer address', 'address')
+    print (tags.tail())
+
+    tc_parcels['OWNER_ADDRESS'] = tc_parcels.apply(cleanOwnerAddress, axis=1)
+    df = tc_parcels[[COLUMNS.keyCol,'OWNER_ADDRESS']].rename(columns={'OWNER_ADDRESS':'source_value'}).copy()
+    df['tag_value'] = df['source_value']
+    tags = add_tags(tags, df, 'Owner address', 'address')
     print (tags.tail())
 
 
