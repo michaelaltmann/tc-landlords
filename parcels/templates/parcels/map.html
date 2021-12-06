@@ -5,7 +5,7 @@
 
 {% block content %}
 <H3>Portfolio {{PORT_ID}}</H3>
-<span>Map View</span> | <a href="portfolio?PORT_ID={{portfolioId}}">List View</a> | <a href="portfolio_tags?PORT_ID={{portfolioId}}">Tag View</a>
+<span>Map View</span> | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> | <a href="portfolio_tags?PORT_ID={{PORT_ID}}">Tag View</a>
 
 <div id="featureDetail"></div>
 <div class="container">
@@ -46,7 +46,7 @@
         var selectedFeatureId = null;
         map.addSource('portfolio', {
             type: 'geojson',
-            data: '/api/portfolio?PORT_ID={{portfolioId}}',
+            data: '/api/portfolio?PORT_ID={{PORT_ID}}',
             'generateId': true 
             });
 

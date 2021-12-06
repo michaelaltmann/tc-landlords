@@ -77,7 +77,12 @@ az group create --name $rg
 az appservice plan create --name freeplan --sku F1 --is-linux
 az appservice plan create --name basicplan --sku B1 --is-linux
 az appservice plan create --name standardplan --sku S1 --is-linux
-az webapp create --name tc-landlords --resource-group $rg --plan standardplan --runtime "python|3.6"
+az webapp create --name tc-landlords --resource-group $rg --plan standardplan --runtime "python|3.7"
+# Deployments should install modules from requirements.txt
+az webapp config appsettings set  --settings SCM_DO_BUILD_DURING_DEPLOYMENT=True
+# For access to ADLS
 az webapp config appsettings set  --settings  STORAGE_ACCOUNT_KEY='pgmI...'
+
 az webapp up --name tc-landlords --resource-group $rg --plan standardplan
+
 ```

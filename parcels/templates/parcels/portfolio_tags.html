@@ -52,15 +52,25 @@ function unhighlight(t) {
 .subgroup_8 {
      background-color: #ff7f00
 }
+.tag_link_selected {
+    color: lightgray
+}
+.tag_link_unselected {
+     color: black   
+}
 </style>
-<h3>Portfolio {{PORT_ID}}</h3>
+<h3>Portfolio Tags for {{PORT_ID}}</h3>
 <a href="map?PORT_ID={{PORT_ID}}">Map View</a>
- | <a href="portfolio?PORT_ID={{portfolioId}}">List View</a> | <span>Tag View</span> 
-
+ | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> | <span>Tag View</span> 
+<p>
+This page allows you to investigate the shared tags that were used to link together parcels into
+this portfolio.  Below, select just the tags that you are confident should be used to link  parcels.
+When you submit your selection you will see how the parcels fall into subgroups. 
+</p>
 <h3> Shared Tags </h3>
 <form method="post">
     {% csrf_token %}
-    <input type='hidden' name="PORT_ID" value="{{portfolioId}}"/>
+    <input type='hidden' name="PORT_ID" value="{{PORT_ID}}"/>
     <table class="table-sm" id='tags'>
         <thead>
             <th>Selected</th>
@@ -74,7 +84,7 @@ function unhighlight(t) {
             <tr>
                 <td > <input type="checkbox" name="selected_tag_ids[]" value="{{tag.tag_type_value}}" {% if tag.checked %} checked {% endif %} }/> </td>
                 <td >{{tag.tag_type }}</td>
-                <td >{{tag.tag_value }}</td>
+                <td ><a id="{{tag.tag_type_value}}"> {{tag.tag_value }}</a></td>
                 <td >{{tag.parcels}}</td>
                 <td > {% if tag.unassigned %} {{tag.unassigned  }} {% endif %} </td>
             </tr>
@@ -96,9 +106,11 @@ function unhighlight(t) {
 {% for parcel in samePortfolio %}
     <tr>
         <td ><a href="property?key={{parcel.GLOBAL_ID}}" >{{parcel.ADDRESS }}</a>
-        {% if parcel.tag_value_list %}
-                <br>
-            {{ parcel.tag_value_list|join:", "}}
+        {% if parcel.tag_tuples %}
+            <br>
+            Tags: {% for tuple in parcel.tag_tuples %}
+                <a href="#{{tuple.1}}" class={% if tuple.2 %} "tag_link_selected" {%else%} "tag_link_unselected" {%endif%}>{{tuple.0}}</A>&nbsp; &nbsp; 
+            {% endfor %}
         {% endif %}
         </td>
         <td class="subgroup_{{parcel.portfolio_subgroup}}"> {% if parcel.portfolio_subgroup %} {{parcel.portfolio_subgroup }} {% endif %} </a></td>

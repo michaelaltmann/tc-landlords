@@ -176,18 +176,26 @@ def portfolio_tags(request):
         subgroup_count = 0
     unassigned_count = len(samePortfolio[samePortfolio['portfolio_subgroup']==0].index)
 
+    # build the list of shared tags with an indication of how many
+    # unmatched parcled are still available for each
     unmatched_tags = tags[ ~ tags['tag_type_value'].isin(selected_tag_ids) ]
     selected_parcel_ids = selected_tags.index.unique()
     unmatched_tags = unmatched_tags[ ~ unmatched_tags.index.isin(selected_parcel_ids)]
-    grouped_unmatched_tags = unmatched_tags.reset_index().groupby(['tag_type','tag_value'])[[COLUMNS.keyCol]].agg('count').rename(columns={COLUMNS.keyCol: 'unassigned'})
-    available_tags = unmatched_tags.reset_index()[[COLUMNS.keyCol, 'tag_value']].groupby(COLUMNS.keyCol).agg(list).rename(columns={'tag_value': 'tag_value_list'})
-    samePortfolio = samePortfolio.join(available_tags)
-    samePortfolio['tag_value_list'] = samePortfolio['tag_value_list'].fillna(0)
+    grouped_unmatched_tags = unmatched_tags.reset_index().groupby(['tag_type','tag_value'])[[COLUMNS.keyCol]].agg('count').rename(columns={COLUMNS.keyCol: 'unassigned'})   
     shared_tag_groups = shared_tag_groups.join(grouped_unmatched_tags)
     shared_tag_groups['unassigned'] = shared_tag_groups['unassigned'].fillna(0).astype('int')
+     
+    available_tags = tags.reset_index()
+    available_tags['selected'] = available_tags['tag_type_value'].isin(selected_tag_ids) 
+    available_tags['tag_tuples'] = available_tags.apply(lambda row: (row['tag_value'], row['tag_type_value'],row['selected']), axis=1 )
+    available_tags = available_tags[[COLUMNS.keyCol, 'tag_tuples']]
+    available_tags = available_tags.groupby(COLUMNS.keyCol).agg(list)
+    samePortfolio = samePortfolio.join(available_tags)
+    samePortfolio['tag_tuples'] = samePortfolio['tag_tuples'].fillna(0)
+   
     colors = ['black', 'red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
     context = {
-        'portfolioId': portfolioId,
+        COLUMNS.PORT_ID: portfolioId,
         'shared_tags': shared_tag_groups.reset_index().to_dict(orient='records'),
         'samePortfolio': samePortfolio.sort_values(by=['portfolio_subgroup']).reset_index().to_dict(orient='records'),
 
@@ -297,7 +305,7 @@ def map(request):
     sameOwner = parcels.loc[parcels[COLUMNS.PORT_ID]
                              == portfolioId][[COLUMNS.ADDRESS,'licenseNum',  COLUMNS.NAMES, COLUMNS.LAT, COLUMNS.LON]]
     context = {
-        'portfolioId': portfolioId,
+        COLUMNS.PORT_ID: portfolioId,
         'mapbox_access_token': 'pk.eyJ1IjoibWFsdG1hbm4iLCJhIjoiQjgzZTEyNCJ9.0_UJWIO6Up0HkMQajYj6Ew',
         'properties': sameOwner.to_dict(orient='records')
     }
