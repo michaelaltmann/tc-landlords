@@ -11,6 +11,7 @@ urlpatterns = [
     path('portfolio', views.portfolio),
     path('portfolio_tags', views.portfolio_tags),
     path('map', views.map),
-    path('search', views.search)
+    path('search', views.search),
+    path('clear', views.clear)
 
 ]

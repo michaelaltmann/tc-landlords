@@ -14,7 +14,7 @@ type_abbrevs  = {'avenue':'AVE', 'bend':'BND','branch':'BR', 'boulevard':'BLVD',
         'park':'PARK','parkway':'PKWY', 'pass':'PASS','path':'PATH', 'place':'PL','plaza':'PLZ','point':'PT','points':'PTS','prairie':'PR',
         'ridge':'RDG', 'road':'RD', 
         'route':'RT', 'row':'ROW', 'run': 'RUN',
-        'square':'SQ', 'street':'ST' , 'terrace':'TERR', 'trail':'TR', 'view': 'VW', 'walk': 'WALK', 'way': 'WAY'}
+        'suite': 'STE', 'square':'SQ', 'street':'ST' , 'terrace':'TERR', 'trail':'TR', 'view': 'VW', 'walk': 'WALK', 'way': 'WAY'}
 direction_abbrevs = {'north':'N', 'northeast':'NE', 'east': 'E', 'southeast': 'SE', 
     'south': 'S','southwest': 'SW', 'west': 'W', 'northwest': 'NW'}
 abbrev_expansions = dict()

@@ -1,3 +1,4 @@
+from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.shortcuts import redirect
 import re
@@ -289,6 +290,10 @@ def portfolios(request):
     }
     return render(request, 'parcels/portfolios.html', context)
 
+def clear(request):
+    ParcelData.clear()
+    ViolationData.clear()
+    return redirect("/") 
 
 def map(request):
     """

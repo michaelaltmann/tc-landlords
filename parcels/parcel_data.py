@@ -42,6 +42,9 @@ class ParcelData:
     def __getattr__(self, name):
         return getattr(self.singleton, name)
 
+    def clear():
+        ParcelData.singleton.clear()
+
     def get_data_url(file_name):
         if ParcelData.DOWNLOAD:
             url=f"https://{ParcelData.STORAGE_ACCNT}.blob.core.windows.net/{ParcelData.CONTAINER}/{ParcelData.remote_directory}/{file_name}" 
@@ -51,6 +54,9 @@ class ParcelData:
 
     class __ParcelData:
         def __init__(self):
+            self.clear()
+
+        def clear(self):
             self._portfolios = None
             self._parcels = None
             self._tags = None

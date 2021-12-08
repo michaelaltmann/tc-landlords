@@ -15,8 +15,14 @@ class ViolationData:
     def __getattr__(self, name):
         return getattr(self.singleton, name)
 
+    def clear():
+        ViolationData.singleton.clear()
+        
     class __ViolationData:
         def __init__(self):
+            self.clear()
+
+        def clear(self):
             self._violations = None
             self._countByAddress = None
 
