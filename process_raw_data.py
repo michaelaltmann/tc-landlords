@@ -7,7 +7,7 @@ import geopandas
 
 from pandas.core.frame import DataFrame
 from parcels.union_find import UnionFind
-from parcels.transform import clean, cleanEmail, cleanName, cleanPhone
+from parcels.transform import *
 from parcels.parcel_data import ParcelData
 import time
 COLUMNS = ParcelData.COLUMNS
@@ -31,55 +31,9 @@ def buildMetroGISAddress(row):
     words = [word for word in words if len(word)>0]
     s = " ".join(words)
     if isinstance(row['POSTCOMM'], str) and len(row['POSTCOMM'].strip()) > 0:
-        s = s + ", " + row['POSTCOMM'].strip() 
+        s = s + " " + row['POSTCOMM'].strip() 
     return s.upper()
 
-type_abbrevs  = {'avenue':'AVE', 'bend':'BND','branch':'BR', 'boulevard':'BLVD', 'circle':'CIR', 
-        'cove':'CV','court':'CT', 'creek':'CRK', 'curve':'CURV', 
-        'crest': 'CRST', 'crescent': 'CRES', 'crossing': 'XING', 'crossroad': 'XRD', 'dale':'DL', 'drive':'DR','extension':'EXT', 
-        'expressway':'EXPY', 'freeway':'FWY', 'garden':'GDN', 'gardens':'GDNS', 'gateway':'GTWY','glen': 'GL', 'freen': 'GRN', 'grove':'GRV', 'harbor':'HBR', 'heights':'HTS', 'highway':'HWY', 
-        'hill': 'HL', 'island':'IS', 
-        'junction':'JCT','lake':'LK','landing':'LNDG', 'lane':'LN','loop':'LOOP', 'mall':'MALL', 'mountain':'MTN',
-        'park':'PARK','parkway':'PKWY', 'pass':'PASS','path':'PATH', 'place':'PL','plaza':'PLZ','point':'PT','points':'PTS','prairie':'PR',
-        'ridge':'RDG', 'road':'RD', 
-        'route':'RT', 'row':'ROW', 'run': 'RUN',
-        'square':'SQ', 'street':'ST' , 'terrace':'TERR', 'trail':'TR', 'view': 'VW', 'walk': 'WALK', 'way': 'WAY'}
-direction_abbrevs = {'north':'N', 'northeast':'NE', 'east': 'E', 'southeast': 'SE', 
-    'south': 'S','southwest': 'SW', 'west': 'W', 'northwest': 'NW'}
-abbrev_expansions = dict()
-for (key, val) in type_abbrevs.items():
-    abbrev_expansions[val] = key
-for (key, val) in direction_abbrevs.items():
-    abbrev_expansions[val] = key
-
-
-def abbreviateType(s):
-    if isinstance(s,str):
-        if s.lower() in type_abbrevs.keys():
-            return  type_abbrevs.get(s.lower(),s).upper()
-        else:
-            print ("Did not abbrev type ", s)
-    return s
-
-def abbreviateDirection(s):
-    if isinstance(s,str):
-        if s.lower() in direction_abbrevs.keys():
-            return direction_abbrevs.get(s.lower(),s).upper()
-        else:
-            print ("Could not abbrev direction ", s)    
-    return s
-
-def expandAbbrev( s):
-    if isinstance(s,str):
-        if s.upper() in abbrev_expansions.keys():
-            return abbrev_expansions.get(s.upper(),s).upper()   
-    return s
-
-
-def expandAddress(s):
-    words = s.split(' ')
-    expandedWords = [expandAbbrev(word) for word in words]
-    return ' '.join(expandedWords)
 
 
 def buildMetroGISAbbrevAddress(row):
@@ -95,37 +49,8 @@ def buildMetroGISAbbrevAddress(row):
     words = [word for word in words if len(word)>0]
     s = " ".join(words)
     if isinstance(row['POSTCOMM'], str) and len(row['POSTCOMM'].strip()) > 0:
-        s = s + ", " + row['POSTCOMM'].strip() 
+        s = s + " " + row['POSTCOMM'].strip() 
     return s.upper()
-
-def cleanAddressLine(s):
-    if isinstance(s, str) and s:
-        s = re.sub('\s+', ' ',s).replace('.', '')
-        s = ' ' + s.strip().upper() + ' '
-        s = s.replace(' S E ', ' SE ')
-        s = s.replace(' S W ', ' SW ')
-        s = s.replace(' N E ', ' NE ')
-        s = s.replace(' N W ', ' NW ')
-
-        # Look for addresses like 123Main that need a space inserted
-        match = re.search(r"^([0-9]+)([a-z]+)", s)
-        if match:
-            start = match.span()[0]
-            finish = match.span()[1]
-            streetName = match.group(2)
-            if not streetName in ['TH', 'ST', 'RD', 'ND'] and len(streetName) > 0:
-                s = s[:start] + match.group(1) + \
-                    " " + match.group(2) + s[finish:]
-        words = s.strip().split(' ')
-        words = [expandAbbrev(word) for word in words]
-        address = " ".join(words)
-        return address            
-    else:
-        return s
-
-def cleanAddressList(lines):
-    address = ", ".join([cleanAddressLine(line) for line in lines if isinstance(line,str) and line])
-    return address
 
 def cleanOwnerAddress(row):
     line1 = cleanAddressLine(row['OWN_ADD_L1'])

@@ -5,16 +5,69 @@ from .union_find import UnionFind
 
 street_abvs = r" ave(\Z| )| av(\Z| )| ste(\Z| )| blvd(\Z| )| st(\Z| )| drive(\Z| )| dr(\Z| )|#| ln(\Z| )| dri(\Z| )| ter(\Z| )| pl(\Z| )| street(\Z| )| ct(\Z| )| rd(\Z| )| cicle(\Z| )| road(\Z| )| lane(\Z| )| trail(\Z| )| way(\Z| )| pk(\Z| )| avenue(\Z| )| place(\Z| )| hwy(\Z| )| court(\Z| )| cir(\Z| )| pkwy(\Z| )| xing(\Z| )"
 
+type_abbrevs  = {'avenue':'AVE', 'bend':'BND','branch':'BR', 'boulevard':'BLVD', 'circle':'CIR', 
+        'cove':'CV','court':'CT', 'creek':'CRK', 'curve':'CURV', 
+        'crest': 'CRST', 'crescent': 'CRES', 'crossing': 'XING', 'crossroad': 'XRD', 'dale':'DL', 'drive':'DR','extension':'EXT', 
+        'expressway':'EXPY', 'freeway':'FWY', 'garden':'GDN', 'gardens':'GDNS', 'gateway':'GTWY','glen': 'GL', 'freen': 'GRN', 'grove':'GRV', 'harbor':'HBR', 'heights':'HTS', 'highway':'HWY', 
+        'hill': 'HL', 'island':'IS', 
+        'junction':'JCT','lake':'LK','landing':'LNDG', 'lane':'LN','loop':'LOOP', 'mall':'MALL', 'mountain':'MTN',
+        'park':'PARK','parkway':'PKWY', 'pass':'PASS','path':'PATH', 'place':'PL','plaza':'PLZ','point':'PT','points':'PTS','prairie':'PR',
+        'ridge':'RDG', 'road':'RD', 
+        'route':'RT', 'row':'ROW', 'run': 'RUN',
+        'square':'SQ', 'street':'ST' , 'terrace':'TERR', 'trail':'TR', 'view': 'VW', 'walk': 'WALK', 'way': 'WAY'}
+direction_abbrevs = {'north':'N', 'northeast':'NE', 'east': 'E', 'southeast': 'SE', 
+    'south': 'S','southwest': 'SW', 'west': 'W', 'northwest': 'NW'}
+abbrev_expansions = dict()
+for (key, val) in type_abbrevs.items():
+    abbrev_expansions[val] = key
+for (key, val) in direction_abbrevs.items():
+    abbrev_expansions[val] = key
 
-def cleanAddressLine(address):
-    s = address
-    if isinstance(s, str):
-        s = s.replace('\n', ' ').replace('.', '').lower().strip()
 
-        # Ignore ave, street, lane, etc  because
-        # This creates a slight danger of linking landlords at
-        # 123 Main St and 1233 Main Ave
-        s = re.sub(street_abvs, ' ', s)
+def abbreviateType(s):
+    if isinstance(s,str):
+        if s.lower() in type_abbrevs.keys():
+            return  type_abbrevs.get(s.lower(),s).upper()
+        else:
+            print ("Did not abbrev type ", s)
+    return s
+
+def abbreviateDirection(s):
+    if isinstance(s,str):
+        if s.lower() in direction_abbrevs.keys():
+            return direction_abbrevs.get(s.lower(),s).upper()
+        else:
+            print ("Could not abbrev direction ", s)    
+    return s
+
+def expandAbbrev( s):
+    if isinstance(s,str):
+        if s.upper() in abbrev_expansions.keys():
+            return abbrev_expansions.get(s.upper(),s).upper()   
+    return s
+
+
+def expandAddress(s):
+    words = s.split(' ')
+    expandedWords = [expandAbbrev(word) for word in words]
+    return ' '.join(expandedWords)
+
+def shortenZipcode(s):
+    match = re.match(r'^(\d{5})(\-\d*)?$', s)
+    if match:
+        return match.group(1)
+    else:
+        return s
+
+def cleanAddressLine(s):
+    if isinstance(s, str) and s:
+        s = s.replace(',',' ')
+        s = re.sub('\s+', ' ',s).replace('.', '')
+        s = ' ' + s.strip().upper() + ' '
+        s = s.replace(' S E ', ' SE ')
+        s = s.replace(' S W ', ' SW ')
+        s = s.replace(' N E ', ' NE ')
+        s = s.replace(' N W ', ' NW ')
 
         # Look for addresses like 123Main that need a space inserted
         match = re.search(r"^([0-9]+)([a-z]+)", s)
@@ -22,17 +75,19 @@ def cleanAddressLine(address):
             start = match.span()[0]
             finish = match.span()[1]
             streetName = match.group(2)
-            if not streetName in ['th', 'st', 'rd', 'nd'] and len(streetName) > 0:
+            if not streetName in ['TH', 'ST', 'RD', 'ND'] and len(streetName) > 0:
                 s = s[:start] + match.group(1) + \
                     " " + match.group(2) + s[finish:]
-        # Condense whitespace
-        s = re.sub('\s+', ' ', s)
-        # print(address)
-        # print(s)
-        return s.strip()
+        words = s.strip().split(' ')
+        words = [shortenZipcode(expandAbbrev(word)) for word in words]
+        address = " ".join(words)
+        return address            
     else:
         return s
 
+def cleanAddressList(lines):
+    address = " ".join([cleanAddressLine(line) for line in lines if isinstance(line,str) and line])
+    return address
 
 def cleanAddressPair(s, s2):
     s = cleanAddressLine(s)
