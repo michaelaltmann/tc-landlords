@@ -4,5 +4,5 @@ from . import views
 
 urlpatterns = [
     path('portfolio', views.portfolio),
-    path('tags', views.tags),
+    path('portfolio_network', views.portfolio_network),
 ]

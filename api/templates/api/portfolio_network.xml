@@ -1,0 +1,33 @@
+<gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
+    <meta lastmodifieddate="2009-03-20">
+        <creator>Michael Altmann</creator>
+        <description>Network of related parcels in a portfolio</description>
+    </meta>
+    <graph defaultedgetype="directed">
+        <attributes class="node">
+            <attribute id="node_type" type="string"/>
+        </attributes>
+        <nodes>
+        {% for tag_value in tag_values %}
+            <node id="{{tag_value}}" label="{{tag_value}}">
+                <attvalues>
+                    <attvalue for="node_type" value="TAG"/>
+                </attvalues>
+            </node>
+        {% endfor %}
+        {% for parcel in parcels %}
+            <node id="{{parcel.GLOBAL_ID}}" label="{{parcel.ADDRESS}}">
+                <attvalues>
+                    <attvalue for="node_type" value="PARCEL"/>
+                </attvalues>
+            </node>
+        {% endfor %}
+        </nodes>
+        <edges>
+
+        {% for tag in tags %}
+            <edge id="{{tag.id}}" source="{{tag.tag_value}}" target="{{tag.GLOBAL_ID}}"/>
+        {% endfor %}
+        </edges>
+    </graph>
+</gexf>
