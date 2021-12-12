@@ -1,4 +1,7 @@
-<gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
+<gexf xmlns="http://www.gexf.net/1.2draft" 
+xmlns:viz="http://www.gephi.org/gexf/viz"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
     <meta lastmodifieddate="2009-03-20">
         <creator>Michael Altmann</creator>
         <description>Network of related parcels in a portfolio</description>
@@ -10,6 +13,8 @@
         <nodes>
         {% for tag_value in tag_values %}
             <node id="{{tag_value}}" label="{{tag_value}}">
+                <viz:color r="255" g="0" b="0"/>
+                <viz:size value="8"/>
                 <attvalues>
                     <attvalue for="node_type" value="TAG"/>
                 </attvalues>
@@ -17,6 +22,8 @@
         {% endfor %}
         {% for parcel in parcels %}
             <node id="{{parcel.GLOBAL_ID}}" label="{{parcel.ADDRESS}}">
+                <viz:color r="0" g="0" b="255"/>
+                <viz:size value="3"/>
                 <attvalues>
                     <attvalue for="node_type" value="PARCEL"/>
                 </attvalues>

@@ -315,3 +315,10 @@ def map(request):
         'properties': sameOwner.to_dict(orient='records')
     }
     return render(request, 'parcels/map.html', context)
+
+
+def network(request):
+    context = {
+
+    }
+    return render(request, 'parcels/network.html', context, )
