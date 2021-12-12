@@ -55,7 +55,7 @@ Network of Parcels and Tags
     }
         </style>
     <script src="{% static 'js/sigma.js' %}"></script>
-  <script src="{% static 'js/node_modules/graphology/dist/graphology.umd.js' %}"></script>
+  <script src="{% static 'js/graphology.umd.js' %}"></script>
   <script src="{% static 'js/graphology-library.js' %}"></script>
 
   <script>
@@ -87,10 +87,43 @@ Network of Parcels and Tags
     // Create the spring layout and start it
     const layout = new graphologyLibrary.ForceLayout(graph, { isNodeFixed: (_, attr) => attr.highlighted });
     layout.start();
-    var s = new Sigma.Sigma( graph,
+
+    var renderer = new Sigma.Sigma( graph,
        document.querySelector("#graphContainer") 
     )
-    s.refresh()
+    let draggedNode = null;
+    let isDragging = false;
+    renderer.on("downNode", (e) => {
+      console.log("downNode " + e.node);
+      isDragging = true;
+      draggedNode = e.node;
+      graph.setNodeAttribute(draggedNode, "highlighted", true);
+      renderer.getCamera().disable();
+    });
+
+    renderer.getMouseCaptor().on("mousemove", (e) => {
+      console.log("mousemovebody " + e);
+      if (!isDragging || !draggedNode) return;
+
+      // Get new position of node
+      const pos = renderer.viewportToGraph(e);
+
+      graph.setNodeAttribute(draggedNode, "x", pos.x);
+      graph.setNodeAttribute(draggedNode, "y", pos.y);
+    });
+
+    // On mouse up, we reset the autoscale and the dragging mode
+    renderer.getMouseCaptor().on("mouseup", (e) => {
+      console.log("mouseup " + e);
+      if (draggedNode) {
+        graph.removeNodeAttribute(draggedNode, "highlighted");
+      }
+      isDragging = false;
+      draggedNode = null;
+      renderer.getCamera().enable();
+    });
+
+    renderer.refresh()
     })
 
   </script>
