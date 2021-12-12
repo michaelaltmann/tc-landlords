@@ -1,4 +1,3 @@
-<!-- prettier-ignore -->
 {% extends 'base.html' %} 
 {% load static %}
 
@@ -8,29 +7,60 @@ Network of Parcels and Tags
 {% block content %}
 
 
-         <style type='text/css'>
-            body, #graphContainer {
-                height: 100%;
-                width: 100%;
-                position: absolute;
-                margin: 0;
-            }
-            #graphContainer > svg { 
-              width: 100%; 
-              height: 100%;
-            }
-            .label {
-                position: absolute;
-                top: 10px;
-                color: white;
-                font-size: 14px;
-                left: 10px;
-                font-family: monospace;
-            }
+<style type='text/css'>
+  #graphContainer {
+      width: 100%;
+      height: 800px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    #controls {
+      position: absolute;
+      right: 1em;
+      top: 1em;
+      text-align: right;
+    }
+    .input {
+      position: relative;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .input:not(:hover) label {
+      display: none;
+    }
+    .input label {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: black;
+      color: white;
+      padding: 0.2em;
+      border-radius: 2px;
+      margin-top: 0.3em;
+      font-size: 0.8em;
+      white-space: nowrap;
+    }
+    .input button {
+      width: 2.5em;
+      height: 2.5em;
+      display: inline-block;
+      text-align: center;
+      background: white;
+      outline: none;
+      border: 1px solid dimgrey;
+      border-radius: 2px;
+      cursor: pointer;
+    }
         </style>
-  <script src="{% static 'js/vivagraph.js' %}"></script> 
-  <script>
+    <script src="{% static 'js/sigma.js' %}"></script>
+  <script src="{% static 'js/node_modules/graphology/dist/graphology.umd.js' %}"></script>
+  <script src="{% static 'js/graphology-library.js' %}"></script>
 
+  <script>
+  var graph = new graphology.Graph()
+  
   // Load external network file:
   const url = "http://localhost:8000/api/portfolio_network.json?PORT_ID={{PORT_ID}}"
  
@@ -38,51 +68,37 @@ Network of Parcels and Tags
     .then((res) => res.json())
     .then((data) => {
 
-      var graph = Viva.Graph.graph();
       data.tag_values.forEach((tag_value) => {
-        graph.addNode(tag_value, {type: 'TAG'})
+        graph.addNode(tag_value, {"label": tag_value,  size: 4})
       })
       data.parcels.forEach((parcel) => {
-        graph.addNode(parcel.GLOBAL_ID, {type: 'PARCEL', label: parcel.ADDRESS})
+        graph.addNode(parcel.GLOBAL_ID, {"label": parcel.ADDRESS,   "size":8, color: "#0000FF" })
       })
       data.tags.forEach( (tag) => {
-        graph.addLink(tag.tag_value, tag.GLOBAL_ID)
+        graph.addEdge(tag.tag_value, tag.GLOBAL_ID)
       }) 
-    var graphics = Viva.Graph.View.svgGraphics();
-    graphics.node(function(node) {
-      if (node.data.type == 'PARCEL') {
-      return Viva.Graph.svg('rect')
-            .attr('fill', '#999')
-            .attr('width', 24)
-            .attr('height', 24)
-      } else {
-        return Viva.Graph.svg('rect')
-            .attr('width', 10)
-            .attr('height', 10)
-      }
-
-      });
-
-    var layout = Viva.Graph.Layout.forceDirected(graph, {
-        springLength : 20,
-        springCoeff : 0.0001,
-        dragCoeff : .01,
-        gravity : -1.2,
-        theta : .1
+    
+  
+    graph.nodes().forEach((node, i) => {
+      const angle = (i * 2 * Math.PI) / graph.order + 20*Math.random();
+      graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
+      graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
     });
-    var renderer = Viva.Graph.View.renderer(graph, {
-      layout: layout,
-      graphics: graphics,
-      container: document.getElementById('graphContainer')
-    });
-    renderer.run();
+    // Create the spring layout and start it
+    const layout = new graphologyLibrary.ForceLayout(graph, { isNodeFixed: (_, attr) => attr.highlighted });
+    layout.start();
+    var s = new Sigma.Sigma( graph,
+       document.querySelector("#graphContainer") 
+    )
+    s.refresh()
     })
 
   </script>
   <a href="map?PORT_ID={{PORT_ID}}">Map View</a>
  | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> | <a href="portfolio_tags?PORT_ID={{PORT_ID}}">Tag View</a>| Network View
 
-  <div class="container" id="graphContainer">
+  <div class="container" >
+    <div id="graphContainer" />
   </div>
 {% endblock content %}
 
