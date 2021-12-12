@@ -318,7 +318,11 @@ def map(request):
 
 
 def network(request):
+    if request.method == "GET":
+        portfolioId = request.GET[COLUMNS.PORT_ID]
+    elif request.method == "POST":
+        portfolioId = request.POST[COLUMNS.PORT_ID]
     context = {
-
+        COLUMNS.PORT_ID : portfolioId
     }
     return render(request, 'parcels/network.html', context, )

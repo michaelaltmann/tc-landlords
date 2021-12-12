@@ -55,7 +55,7 @@ def get_address_tags(addresses):
     address_tags = tags[tags.address.isin(addresses)].drop_duplicates()
     return address_tags.sort_values(by=[COLUMNS.ADDRESS,'tag_type', 'tag_value'])
 
-def portfolio_network(request):
+def portfolio_network_data(request):
     parcels = parcelData.parcels
     if request.method == "GET":
         portfolioId = request.GET[COLUMNS.PORT_ID]
@@ -72,10 +72,17 @@ def portfolio_network(request):
     tags = tags[tags['tag_value'].isin(shared_tag_values)]
     tags['id'] = range(1, 1+len(tags))
 
-    context = {
+    data = {
         'parcels' : samePortfolio.reset_index().to_dict(orient='records'),
         'tag_values': shared_tag_values,
         "tags": tags.reset_index().to_dict(orient='records')
     }
+    return data
+
+def portfolio_network_xml(request):
+    context = portfolio_network_data(request)
     return render(request, 'api/portfolio_network.xml', context, content_type="application/xml")
 
+def portfolio_network_json(request):
+    data = portfolio_network_data(request)
+    return JsonResponse(data)
