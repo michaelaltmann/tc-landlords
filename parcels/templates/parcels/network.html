@@ -1,0 +1,88 @@
+<!-- prettier-ignore -->
+{% extends 'base.html' %} 
+{% load static %}
+
+{% block title %}
+Network of Parcels and Tags
+{% endblock title %}
+{% block content %}
+
+
+         <style type='text/css'>
+            body, #graphContainer {
+                height: 100%;
+                width: 100%;
+                position: absolute;
+                margin: 0;
+            }
+            #graphContainer > svg { 
+              width: 100%; 
+              height: 100%;
+            }
+            .label {
+                position: absolute;
+                top: 10px;
+                color: white;
+                font-size: 14px;
+                left: 10px;
+                font-family: monospace;
+            }
+        </style>
+  <script src="{% static 'js/vivagraph.js' %}"></script> 
+  <script>
+
+  // Load external network file:
+  const url = "http://localhost:8000/api/portfolio_network.json?PORT_ID={{PORT_ID}}"
+ 
+  fetch(url)
+    .then((res) => res.json())
+    .then((data) => {
+
+      var graph = Viva.Graph.graph();
+      data.tag_values.forEach((tag_value) => {
+        graph.addNode(tag_value, {type: 'TAG'})
+      })
+      data.parcels.forEach((parcel) => {
+        graph.addNode(parcel.GLOBAL_ID, {type: 'PARCEL', label: parcel.ADDRESS})
+      })
+      data.tags.forEach( (tag) => {
+        graph.addLink(tag.tag_value, tag.GLOBAL_ID)
+      }) 
+    var graphics = Viva.Graph.View.svgGraphics();
+    graphics.node(function(node) {
+      if (node.data.type == 'PARCEL') {
+      return Viva.Graph.svg('rect')
+            .attr('fill', '#999')
+            .attr('width', 24)
+            .attr('height', 24)
+      } else {
+        return Viva.Graph.svg('rect')
+            .attr('width', 10)
+            .attr('height', 10)
+      }
+
+      });
+
+    var layout = Viva.Graph.Layout.forceDirected(graph, {
+        springLength : 20,
+        springCoeff : 0.0001,
+        dragCoeff : .01,
+        gravity : -1.2,
+        theta : .1
+    });
+    var renderer = Viva.Graph.View.renderer(graph, {
+      layout: layout,
+      graphics: graphics,
+      container: document.getElementById('graphContainer')
+    });
+    renderer.run();
+    })
+
+  </script>
+  <a href="map?PORT_ID={{PORT_ID}}">Map View</a>
+ | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> | <a href="portfolio_tags?PORT_ID={{PORT_ID}}">Tag View</a>| Network View
+
+  <div class="container" id="graphContainer">
+  </div>
+{% endblock content %}
+
