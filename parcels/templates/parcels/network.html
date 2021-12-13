@@ -63,27 +63,65 @@ Network of Parcels and Tags
   
   // Load external network file:
   const url = "http://localhost:8000/api/portfolio_network.json?PORT_ID={{PORT_ID}}"
+  let data = {
+    tag_values: [],
+    parcels: []
+  }
+  function handleTagSelectorChange(e) {
+    const checkbox = e.target
+    tag_value = checkbox.value
+    if (!checkbox.checked) {
+        graph.dropNode(tag_value)
+    } else {
+      graph.addNode(tag_value, {"label": tag_value,  size: 4, x:0, y:0})
  
-  fetch(url)
-    .then((res) => res.json())
-    .then((data) => {
+      data.tags.forEach( (tag) => {
+        if (tag_value === tag.tag_value) {
+          graph.addEdge(tag.tag_value, tag.GLOBAL_ID)
+        }
+      })
+    }
+  }
 
-      data.tag_values.forEach((tag_value) => {
+  function buildGraph() {
+    data.tag_values.forEach((tag_value) => {
         graph.addNode(tag_value, {"label": tag_value,  size: 4})
       })
       data.parcels.forEach((parcel) => {
         graph.addNode(parcel.GLOBAL_ID, {"label": parcel.ADDRESS,   "size":8, color: "#0000FF" })
       })
       data.tags.forEach( (tag) => {
-        graph.addEdge(tag.tag_value, tag.GLOBAL_ID)
+          graph.addEdge(tag.tag_value, tag.GLOBAL_ID)
       }) 
     
-  
+    // As an initial location, scatter the nodes in a circle
     graph.nodes().forEach((node, i) => {
       const angle = (i * 2 * Math.PI) / graph.order + 20*Math.random();
       graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
       graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
     });
+  }
+
+  fetch(url)
+    .then((res) => res.json())
+    .then((d) => {
+      data = d
+      const tagSelector = document.getElementById("tagSelector");
+      data.tag_values.forEach( (tag_value) => {
+        const checkbox = document.createElement('input')
+        checkbox.type = 'checkbox';
+        checkbox.name = 'tag_value_checkbox';
+        checkbox.value = tag_value;
+        checkbox.checked = true;
+        checkbox.onchange = handleTagSelectorChange
+        tagSelector.appendChild(checkbox)
+        var label = document.createElement('label')
+        label.htmlFor = 'car';
+        label.appendChild(document.createTextNode(tag_value));
+        tagSelector.appendChild(label)
+        tagSelector.appendChild(document.createElement('br'))
+      })
+      buildGraph()
     // Create the spring layout and start it
     const layout = new graphologyLibrary.ForceLayout(graph, { isNodeFixed: (_, attr) => attr.highlighted });
     layout.start();
@@ -94,7 +132,6 @@ Network of Parcels and Tags
     let draggedNode = null;
     let isDragging = false;
     renderer.on("downNode", (e) => {
-      console.log("downNode " + e.node);
       isDragging = true;
       draggedNode = e.node;
       graph.setNodeAttribute(draggedNode, "highlighted", true);
@@ -102,7 +139,6 @@ Network of Parcels and Tags
     });
 
     renderer.getMouseCaptor().on("mousemove", (e) => {
-      console.log("mousemovebody " + e);
       if (!isDragging || !draggedNode) return;
 
       // Get new position of node
@@ -114,7 +150,6 @@ Network of Parcels and Tags
 
     // On mouse up, we reset the autoscale and the dragging mode
     renderer.getMouseCaptor().on("mouseup", (e) => {
-      console.log("mouseup " + e);
       if (draggedNode) {
         graph.removeNodeAttribute(draggedNode, "highlighted");
       }
@@ -131,6 +166,8 @@ Network of Parcels and Tags
  | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> | <a href="portfolio_tags?PORT_ID={{PORT_ID}}">Tag View</a>| Network View
 
   <div class="container" >
+  <div id="tagSelector">   
+  </div>
     <div id="graphContainer" />
   </div>
 {% endblock content %}
