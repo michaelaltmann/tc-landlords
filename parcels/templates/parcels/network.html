@@ -62,7 +62,7 @@ Network of Parcels and Tags
   var graph = new graphology.Graph()
   
   // Load external network file:
-  const url = "http://localhost:8000/api/portfolio_network.json?PORT_ID={{PORT_ID}}"
+  const url = "/api/portfolio_network.json?PORT_ID={{PORT_ID}}"
   let data = {
     tag_values: [],
     parcels: []
@@ -166,6 +166,7 @@ Network of Parcels and Tags
  | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> | <a href="portfolio_tags?PORT_ID={{PORT_ID}}">Tag View</a>| Network View
 
   <div class="container" >
+  <h4>Shared Tags</h4>
   <div id="tagSelector">   
   </div>
     <div id="graphContainer" />
