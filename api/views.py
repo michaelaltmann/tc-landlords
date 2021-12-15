@@ -64,7 +64,7 @@ def portfolio_network_data(request):
     portfolioId = int(portfolioId)
 
     samePortfolio = parcels.loc[parcels[COLUMNS.PORT_ID]
-                             == portfolioId][[COLUMNS.ADDRESS]].reset_index().drop_duplicates().set_index(COLUMNS.keyCol)
+                             == portfolioId][[COLUMNS.ADDRESS]]
     tags = parcelData.tags.loc[samePortfolio.index.tolist()].reset_index()[[COLUMNS.keyCol, 'tag_value']].drop_duplicates().set_index(COLUMNS.keyCol)
     grouped_tags = tags.reset_index().groupby('tag_value').agg('count')
     shared_grouped_tags = grouped_tags[grouped_tags[COLUMNS.keyCol]>1]

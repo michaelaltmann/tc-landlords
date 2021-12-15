@@ -8,6 +8,9 @@ Network of Parcels and Tags
 
 
 <style type='text/css'>
+  .highlighted {
+    background: yellow;
+  }
   #graphContainer {
       width: 100%;
       height: 800px;
@@ -73,7 +76,7 @@ Network of Parcels and Tags
     if (!checkbox.checked) {
         graph.dropNode(tag_value)
     } else {
-      graph.addNode(tag_value, {"label": tag_value,  size: 4, x:0, y:0})
+      graph.mergeNode(tag_value, {"label": tag_value,  size: 4, x:0, y:0})
  
       data.tags.forEach( (tag) => {
         if (tag_value === tag.tag_value) {
@@ -85,10 +88,10 @@ Network of Parcels and Tags
 
   function buildGraph() {
     data.tag_values.forEach((tag_value) => {
-        graph.addNode(tag_value, {"label": tag_value,  size: 4})
+        graph.mergeNode(tag_value, {"label": tag_value,  size: 4})
       })
       data.parcels.forEach((parcel) => {
-        graph.addNode(parcel.GLOBAL_ID, {"label": parcel.ADDRESS,   "size":8, color: "#0000FF" })
+        graph.mergeNode(parcel.GLOBAL_ID, {"label": parcel.ADDRESS,   "size":8, color: "#0000FF" })
       })
       data.tags.forEach( (tag) => {
           graph.addEdge(tag.tag_value, tag.GLOBAL_ID)
@@ -116,14 +119,17 @@ Network of Parcels and Tags
         checkbox.onchange = handleTagSelectorChange
         tagSelector.appendChild(checkbox)
         var label = document.createElement('label')
-        label.htmlFor = 'car';
+        label.htmlFor = tag_value;
         label.appendChild(document.createTextNode(tag_value));
         tagSelector.appendChild(label)
         tagSelector.appendChild(document.createElement('br'))
       })
       buildGraph()
     // Create the spring layout and start it
-    const layout = new graphologyLibrary.ForceLayout(graph, { isNodeFixed: (_, attr) => attr.highlighted });
+    const settings = {
+      linLogMode: false, slowDown: 100
+    }
+    const layout = new graphologyLibrary.FA2Layout(graph, {  settings: settings, isNodeFixed: (_, attr) => attr.highlighted });
     layout.start();
 
     var renderer = new Sigma.Sigma( graph,
@@ -158,6 +164,18 @@ Network of Parcels and Tags
       renderer.getCamera().enable();
     });
 
+    renderer.on("enterNode", ({node}) => {
+      document.querySelectorAll("#tagSelector>label[for='" +node+"']")
+        .forEach((checkbox) => {
+          checkbox.classList.add('highlighted')
+        })
+    });
+    renderer.on("leaveNode", ({node}) => {
+      document.querySelectorAll("#tagSelector>label[for='" +node+"']")
+        .forEach((checkbox) => {
+          checkbox.classList.remove('highlighted')
+        })
+    });
     renderer.refresh()
     })
 
