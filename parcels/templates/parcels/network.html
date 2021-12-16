@@ -126,10 +126,15 @@ Network of Parcels and Tags
       })
       buildGraph()
     // Create the spring layout and start it
-    const settings = {
-      linLogMode: false, slowDown: 100
-    }
-    const layout = new graphologyLibrary.FA2Layout(graph, {  settings: settings, isNodeFixed: (_, attr) => attr.highlighted });
+    {% if layout == "ForceLayout" %}
+      const layout = new graphologyLibrary.ForceLayout(graph, {  isNodeFixed: (_, attr) => attr.highlighted });
+    {% endif %}
+    {% if layout == "FA2Layout" %}
+      const settings = {
+        linLogMode: false, slowDown: 100
+      }
+      const layout = new graphologyLibrary.FA2Layout(graph, {  settings: settings, isNodeFixed: (_, attr) => attr.highlighted });
+    {% endif %}
     layout.start();
 
     var renderer = new Sigma.Sigma( graph,
