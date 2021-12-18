@@ -105,7 +105,7 @@ def addLinksForTags(tags, uf):
                     uf.union(first, other)
 
 def loadMetroGISCountyParcels(county):
-    df = geopandas.read_file( f'data/raw/metrogis_parcels.zip!Parcels{county}.shp')
+    df = geopandas.read_file( f'../data/raw/metrogis_parcels.zip!Parcels{county}.shp')
     print(f"Read {len(df.index)} for {county}")
     return df
 
@@ -131,20 +131,20 @@ def loadMetroGISParcels():
     return df
 
 def loadMplsLicense():
-    path = 'data/raw/mpls_rental_licences.csv'
+    path = '../data/raw/mpls_rental_licences.csv'
     df = pd.read_csv(path, index_col=False,
                      low_memory=False)
     df[COLUMNS.keyCol] = 'US-MN-27053-' + df['apn'] 
     return df
 
 def loadStPaulLicense():
-    path = 'data/raw/stpaul_rental_licences.csv'
+    path = '../data/raw/stpaul_rental_licences.csv'
     df = pd.read_csv(path, index_col=False,
                      low_memory=False)
     return df
 
 def loadSectState():
-    path = 'data/raw/SectState/2729_20211010_W_UPDATE_Job21_RunOn20211011.CSV'
+    path = '../data/raw/SectState/2729_20211010_W_UPDATE_Job21_RunOn20211011.CSV'
     df = pd.read_csv(path, index_col=False, encoding = "ISO-8859-1",
                      low_memory=False)
     return df[['Business Name', "Address 1","Address 2","City","Region Code","Business Party Name Type", "Party Full Name"]]
@@ -307,12 +307,12 @@ def process_parcels():
     print ('Parcels with no addresses')
     print(allAddresses.loc[allAddresses[COLUMNS.ADDRESS].isna()])
 
-    print("Writing to data/gen/clean_grouped_rental_parcels.zip")
+    print("Writing to ../data/gen/clean_grouped_rental_parcels.zip")
 
-    geo_to_zip(allAddresses, "clean_grouped_rental_parcels", "data/gen/clean_grouped_rental_parcels") 
-    allAddresses.drop(columns=['geometry']).to_csv('data/gen/clean_grouped_rental_parcels.csv')
-    print("Writing to data/gen/tags.csv")
-    tags.to_csv('data/gen/tags.csv', mode='w')
+    geo_to_zip(allAddresses, "clean_grouped_rental_parcels", "../data/gen/clean_grouped_rental_parcels") 
+    allAddresses.drop(columns=['geometry']).to_csv('../data/gen/clean_grouped_rental_parcels.csv')
+    print("Writing to ../data/gen/tags.csv")
+    tags.to_csv('../data/gen/tags.csv', mode='w')
 
     name_tags = tags[tags['tag_type'] == 'name']
     name_tags = name_tags.join(allAddresses[[COLUMNS.PORT_ID]], how='inner').set_index(COLUMNS.PORT_ID)[['source_value']]
@@ -327,12 +327,12 @@ def process_parcels():
     portfolios = portfolios.join(portfolio_names, how='left')
     portfolios = portfolios.sort_values(
         by=COLUMNS.PORT_SZ, ascending=False)
-    portfolios.to_csv('data/gen/portfolios.csv')
+    portfolios.to_csv('../data/gen/portfolios.csv')
     print(portfolios.reset_index().head(20))
 
 def read_violations():
     all_files = [
-        f"data/raw/mpls-violations/ward{n}.csv" for n in range(1, 14)]
+        f"../data/raw/mpls-violations/ward{n}.csv" for n in range(1, 14)]
     print(f"Loading {all_files}")
     # Address	Tier	Case Number	Violation Code	Violation Code Description	Violation Grouping	Violation Resolved?	Violator Name   	Violator Name	Violation Date
 
@@ -357,7 +357,7 @@ def read_violations():
 
 def process_violations():
     violations = read_violations().set_index(COLUMNS.ADDRESS)
-    violations.to_csv('data/gen/violations.csv', mode='w')
+    violations.to_csv('../data/gen/violations.csv', mode='w')
 
 if __name__ == "__main__":
     process_parcels()
