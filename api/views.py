@@ -55,6 +55,13 @@ def get_address_tags(addresses):
     address_tags = tags[tags.address.isin(addresses)].drop_duplicates()
     return address_tags.sort_values(by=[COLUMNS.ADDRESS,'tag_type', 'tag_value'])
 
+def listOfUniqueStrings(series):
+    strings = series.dropna().tolist()
+    trimmedStrings = [s.strip() for s in strings if isinstance(s, str) and s.strip() and len(s.strip())>0]
+    trimmedStrings = list(set(trimmedStrings))
+    trimmedStrings.sort()
+    return "~".join(trimmedStrings)
+
 def portfolio_network_data(request):
     parcels = parcelData.parcels
     if request.method == "GET":
@@ -65,17 +72,20 @@ def portfolio_network_data(request):
 
     samePortfolio = parcels.loc[parcels[COLUMNS.PORT_ID]
                              == portfolioId][[COLUMNS.ADDRESS]]
-    tags = parcelData.tags.loc[samePortfolio.index.tolist()].reset_index()[[COLUMNS.keyCol, 'tag_value']].drop_duplicates().set_index(COLUMNS.keyCol)
-    grouped_tags = tags.reset_index().groupby('tag_value').agg('count')
+    tags = parcelData.tags.loc[samePortfolio.index.tolist()].reset_index()[[COLUMNS.keyCol, 'tag_value', 'source_value']].drop_duplicates()
+    # Create a new source_value col with the joined set of source_values
+    tags = tags.reset_index().groupby([COLUMNS.keyCol, 'tag_value']).agg(listOfUniqueStrings).reset_index()
+    grouped_tags = tags.groupby('tag_value').agg('count')
     shared_grouped_tags = grouped_tags[grouped_tags[COLUMNS.keyCol]>1]
     shared_tag_values = shared_grouped_tags.index.unique().tolist()
+
     tags = tags[tags['tag_value'].isin(shared_tag_values)]
     tags['id'] = range(1, 1+len(tags))
 
     data = {
         'parcels' : samePortfolio.reset_index().to_dict(orient='records'),
         'tag_values': shared_tag_values,
-        "tags": tags.reset_index().to_dict(orient='records')
+        "tags": tags.to_dict(orient='records')
     }
     return data
 

@@ -60,10 +60,15 @@ Network of Parcels and Tags
     <script src="{% static 'js/sigma.js' %}"></script>
   <script src="{% static 'js/graphology.umd.js' %}"></script>
   <script src="{% static 'js/graphology-library.js' %}"></script>
-
   <script>
   var graph = new graphology.Graph()
-  
+  // client state
+  let state = {
+      draggedNode: undefined,
+      isDragging: false,
+      hoveredNode: undefined,
+      hoveredNeighbors: undefined
+    }
   // Load external network file:
   const url = "/api/portfolio_network.json?PORT_ID={{PORT_ID}}"
   let data = {
@@ -80,7 +85,7 @@ Network of Parcels and Tags
  
       data.tags.forEach( (tag) => {
         if (tag_value === tag.tag_value) {
-          graph.addEdge(tag.tag_value, tag.GLOBAL_ID)
+          graph.mergeEdge(tag.tag_value, tag.GLOBAL_ID, {"label": tag.source_value})
         }
       })
     }
@@ -88,13 +93,13 @@ Network of Parcels and Tags
 
   function buildGraph() {
     data.tag_values.forEach((tag_value) => {
-        graph.mergeNode(tag_value, {"label": tag_value,  size: 4})
+        graph.mergeNode(tag_value, {"label": tag_value,  size: 4, x:0, x:0})
       })
       data.parcels.forEach((parcel) => {
         graph.mergeNode(parcel.GLOBAL_ID, {"label": parcel.ADDRESS,   "size":8, color: "#0000FF" })
       })
       data.tags.forEach( (tag) => {
-          graph.addEdge(tag.tag_value, tag.GLOBAL_ID)
+          graph.mergeEdge(tag.tag_value, tag.GLOBAL_ID, {"label": tag.source_value})
       }) 
     
     // As an initial location, scatter the nodes in a circle
@@ -138,52 +143,94 @@ Network of Parcels and Tags
     layout.start();
 
     var renderer = new Sigma.Sigma( graph,
-       document.querySelector("#graphContainer") 
+       document.querySelector("#graphContainer"), 
+       {
+          renderEdgeLabels: true,
+       } 
     )
-    let draggedNode = null;
-    let isDragging = false;
+
+function setHoveredNode(node) {
+  if (node) {
+    state.hoveredNode = node;
+    state.hoveredNeighbors = new Set(graph.neighbors(node));
+  } else {
+    state.hoveredNode = undefined;
+    state.hoveredNeighbors = undefined;
+  }
+
+  // Refresh rendering:
+  renderer.refresh();
+}
+
     renderer.on("downNode", (e) => {
-      isDragging = true;
-      draggedNode = e.node;
-      graph.setNodeAttribute(draggedNode, "highlighted", true);
+      state.isDragging = true;
+      state.draggedNode = e.node;
+      graph.setNodeAttribute(state.draggedNode, "highlighted", true);
       renderer.getCamera().disable();
     });
 
     renderer.getMouseCaptor().on("mousemove", (e) => {
-      if (!isDragging || !draggedNode) return;
+      if (!state.isDragging || !state.draggedNode) return;
 
       // Get new position of node
       const pos = renderer.viewportToGraph(e);
 
-      graph.setNodeAttribute(draggedNode, "x", pos.x);
-      graph.setNodeAttribute(draggedNode, "y", pos.y);
+      graph.setNodeAttribute(state.draggedNode, "x", pos.x);
+      graph.setNodeAttribute(state.draggedNode, "y", pos.y);
     });
 
     // On mouse up, we reset the autoscale and the dragging mode
     renderer.getMouseCaptor().on("mouseup", (e) => {
-      if (draggedNode) {
-        graph.removeNodeAttribute(draggedNode, "highlighted");
+      if (state.draggedNode) {
+        graph.removeNodeAttribute(state.draggedNode, "highlighted");
       }
-      isDragging = false;
-      draggedNode = null;
+      state.isDragging = false;
+      state.draggedNode = null;
       renderer.getCamera().enable();
     });
 
     renderer.on("enterNode", ({node}) => {
+      setHoveredNode(node)
       document.querySelectorAll("#tagSelector>label[for='" +node+"']")
         .forEach((checkbox) => {
           checkbox.classList.add('highlighted')
         })
     });
     renderer.on("leaveNode", ({node}) => {
+      setHoveredNode(null)
       document.querySelectorAll("#tagSelector>label[for='" +node+"']")
         .forEach((checkbox) => {
           checkbox.classList.remove('highlighted')
         })
     });
+
+
+renderer.setSetting("nodeReducer", (node, data) => {
+  let res = Object.assign({}, data );
+  if (state.hoveredNeighbors && !state.hoveredNeighbors.has(node) && state.hoveredNode !== node) {
+    res.label = "";
+    res.color = "#f6f6f6";
+  }
+
+  return res;
+});
+
+// Render edges accordingly to the internal state:
+// 1. If a node is hovered, the edge is hidden if it is not connected to the
+//    node
+// 2. If there is a query, the edge is only visible if it connects two
+//    suggestions
+renderer.setSetting("edgeReducer", (edge, data) => {
+  let res = Object.assign({}, data );
+
+  if (state.hoveredNode && !graph.hasExtremity(edge, state.hoveredNode)) {
+    res.hidden = true;
+  }
+  return res;
+});
+
     renderer.refresh()
     })
-
   </script>
   <a href="map?PORT_ID={{PORT_ID}}">Map View</a>
  | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> | <a href="portfolio_tags?PORT_ID={{PORT_ID}}">Tag View</a>| Network View

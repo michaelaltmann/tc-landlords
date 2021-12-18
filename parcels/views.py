@@ -317,7 +317,7 @@ def map(request):
     return render(request, 'parcels/map.html', context)
 
 
-  def network(request):
+def network(request):
     if request.method == "GET":
         portfolioId = request.GET[COLUMNS.PORT_ID]
     elif request.method == "POST":

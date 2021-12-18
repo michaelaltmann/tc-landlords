@@ -1,4 +1,4 @@
-from parcels.transform import cleanName, cleanAddressLine
+from parcels.transform import cleanName, cleanAddressLine, cleanPhone, cleanPhone
 import pandas as pd
 import pytest
 
@@ -40,10 +40,13 @@ class TestOwnerOrApplication:
 
 class TestCleanPhone():
     def testCleanPhone(self):
-        data = [['6125551212'], ['(612)5551212'], [' (612) 555-12.12']]
-        df = pd.DataFrame(data, columns=['phone'])
-        df['xPhone'] = df['phone'].str.replace(r"[\(\)\-\.\s]", "", regex=True)
-        assert df['xPhone'].eq('6125551212').all()
+        assert cleanPhone('6125551212') == '612.555.1212'
+        assert cleanPhone('612555 1212') == '612.555.1212'
+        assert cleanPhone('6125551212x999') == '612.555.1212'
+        assert cleanPhone('(612)555-1212') == '612.555.1212'
+        assert cleanPhone('5551212') == '555.1212'
+        assert cleanPhone('12345') == '12345'
+        
 
 
 class TestCleanAddress():

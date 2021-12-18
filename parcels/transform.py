@@ -130,6 +130,10 @@ def cleanPhone(s):
         s = re.sub(r'[\(\)\-\.\s]', '', s)
         # remove extension
         s = re.sub(r'x\d*$', '', s, flags=re.IGNORECASE)
+        if len(s) == 7:
+            return s[:3] + '.' + s[3:]
+        if len(s) == 10:
+            return s[:3] + '.' + s[3:6] + '.' + s[6:]
         return s
     else:
         return s
