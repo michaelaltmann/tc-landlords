@@ -258,11 +258,20 @@ renderer.setSetting("edgeReducer", (edge, data) => {
   <a href="map?PORT_ID={{PORT_ID}}">Map View</a>
  | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> | <a href="portfolio_tags?PORT_ID={{PORT_ID}}">Tag View</a>| Network View
 
-  <div class="container" >
+  <p>
+This page allows you to investigate the shared tags that were used to link together parcels into
+this portfolio.  The blue dots represents parcels.  The gray dots represent shared tags.  You can hover
+over a dot to see its connections.  You can click on a "tag" dot to deactivate a tag that you feel
+is producing spurious connections.  Click on it again, or select its checkbox in the list, to reactivate the
+tag. Another way to visualize how
+tags link together parcels is to used the <a href="portfolio_tags?PORT_ID={{PORT_ID}}">Tag View</a>.
+</p>
+<p>
   <h4>Shared Tags</h4>
   <div id="tagSelector">   
+</p>
   </div>
     <div id="graphContainer" />
-  </div>
+
 {% endblock content %}
 

@@ -19,38 +19,64 @@
 
    
 <h4>Data and Technology</h4>
-<p> 
-Currently, this site is a mashup of four datasets:
-    <ul>
 
-    <li><a href="https://gis-hennepin.opendata.arcgis.com/datasets/county-parcels/explore?location=45.015100%2C-93.474950%2C10.63">Hennepin County Parcel Data</a> 
-     provides information about locations of parcels and their owners in Hennepin.
+Currently, this site is a mashup of four datasets:
+<ul>
+
+    <li><a href="https://resources.gisdata.mn.gov/pub/gdrs/data/pub/us_mn_state_metrogis/plan_regional_parcels/shp_plan_regional_parcels.zip">Twin Cities Metro Parcel Data</a> 
+     provides information about locations of parcels and their owners in the seven counties of the metro area: 
+     Anoka, Carver, Dakota, Hennepin, Ramsey, Scott, Washington.
 
     <li><a href="https://opendata.minneapolismn.gov/datasets/active-rental-licenses">Minneapolis Rental License dataset</a> is our 
-    source of information licensing of rental properties.  It is better
+    source of information about licensing of rental properties.  It is better
     than the county-level property tax data because it includes owner email and phone number. 
 
     <li>Minneapolis Regulatory Services provided the data about 
     <a href="https://tableau.minneapolismn.gov/views/OpenDataRegulatoryServices-Violations/Introduction">violations</a>.  This was exported from the Tableau
     interface. We had to export one precinct at a time because of Tableau limitations.
 
-    <li> <a href="https://gisdata.mn.gov/en_AU/dataset/us-mn-co-ramsey-plan-parcel-data">Ramsey County parcel data</a> 
-         provides information about locations of parcels and their owners in Ramsey.
+    <li>Secretary of State provides information about corporations that are registered in the state.
+    For parcels that are owned by corporations, this data set provides additional attributes that 
+    can be used to link parcels.</li>   
+ </ul>
 
-    </ul>
-
- </p>
 <p>
-   After the raw data were downloaded as csv files, they are brought into Python using the Pandas
-    package and then exposed as a Django web application hosted on <a href="https://tc-landlords.azurewebsites.net">Azure</a>.
+A parcel is the core unit of our analysis because it is the unit of ownership.  Multiple parcels are linked together into a portfolio when there is 
+evidence that the parcel is owned by a single underlying entity.  The Metro Parcel data set has a variety of fields that are used for linkage, 
+such as owner_name and owner_address.   The rental license data set has some additional fields, such as email and phone.  All of these fields require
+data scrubbing because there is variability.  A phone number might be entered as (612)555-1234 on one record and as 612.555.1234 on another record.
+Names, both personal and business, may have variability in punctuation, abbreviations and middle initials.  Addresses have variability in their format and
+use of abbreviations.  During the data scrubbing, we try to eliminate irrelavant variability and keep the important variability. 
+Once the parcels have been "tagged" with the scrubbed attributes, we link parcels that shared a common tag.  For example, parcels A and B might be linked because
+that are both associated with an owner or taxpayer "Jo Richards" and parcels B and C might be linked because both have an email address of j.richards@gmail.com 
+listed.  In this case, parcels A, B and C would be placed into a single portfolio.
+</p>
+<p>
+The Secretary of State's business data is used to generate a secondary set of tags for a parcel.  If a parcel owner's name can be matched to a corporation, the 
+names and addresses associated with the corporation are tagged to the parcel.  This allows us to link parcels that are owned by multiple shell
+corporations that list a single corporate owner. 
+We recognize that this process of cleanning-tagging-linking is an imperfect
+ and so our system provides some tools to address both over-linkage and under-linkage.
+</p>
+<p>
+The regulatory service data from Minneapolis does not provide additional tags for a parcel, but it does enrich our understanding of the 
+parcel, and indirectly, the owner.  Because we do not have historical ownership information, we cannot tell what owner
+to blame for violations prior to the most recent purchase.
+
+</p>
+
+<p>
+   After the raw data were downloaded as csv and shape files, they are brought into Python using the Pandas
+    package, pre-process and stored in Azure ADLS.
+    The user-facing web application is written in Django/Python and
+    hosted on <a href="https://tc-landlords.azurewebsites.net">Azure</a>.
 
     The source code is available on <a href="https://github.com/michaelaltmann/tc-landlords">Github</a>.
 </p>
-<p>
+
     <h4>Caveats</h4>  
     <ul>
-    <li>This website is based on data that were obtained
-    from Minneapolis (Dec 2020), Hennepin county (Aug 2021) and Ramsey county (May 2021). It may not reflect
+    <li>This website is based on data that were obtained in summer of 2021. It may not reflect
     with current conditions.
     <li>This website performs textual analysis to determine when multiple properties are owned 
     by a single landlord.  That analysis may introduce errors where two different landlords with 
@@ -63,6 +89,5 @@ Currently, this site is a mashup of four datasets:
     </ul>
 
 
-</p>
 
 {% endblock content %}
