@@ -79,10 +79,18 @@ Network of Parcels and Tags
     const checkbox = e.target
     tag_value = checkbox.value
     if (!checkbox.checked) {
-        graph.dropNode(tag_value)
+        // We could drop node and all associated edges
+        // graph.dropNode(tag_value)
+        // Just drop the edges
+        data.tags.forEach( (tag) => {
+        if (tag_value === tag.tag_value) {
+          graph.dropEdge(tag.tag_value, tag.GLOBAL_ID)
+        }
+      })
     } else {
-      graph.mergeNode(tag_value, {"label": tag_value,  size: 4, x:0, y:0})
- 
+      // Re-add a node 
+      // graph.mergeNode(tag_value, {"label": tag_value,  size: 4, x:0, y:0}) 
+      // Re-add associated edges
       data.tags.forEach( (tag) => {
         if (tag_value === tag.tag_value) {
           graph.mergeEdge(tag.tag_value, tag.GLOBAL_ID, {"label": tag.source_value})
@@ -120,6 +128,7 @@ Network of Parcels and Tags
         checkbox.type = 'checkbox';
         checkbox.name = 'tag_value_checkbox';
         checkbox.value = tag_value;
+        checkbox.classList.add('mr-2')
         checkbox.checked = true;
         checkbox.onchange = handleTagSelectorChange
         tagSelector.appendChild(checkbox)
@@ -135,10 +144,8 @@ Network of Parcels and Tags
       const layout = new graphologyLibrary.ForceLayout(graph, {  isNodeFixed: (_, attr) => attr.highlighted });
     {% endif %}
     {% if layout == "FA2Layout" %}
-      const settings = {
-        linLogMode: false, slowDown: 100
-      }
-      const layout = new graphologyLibrary.FA2Layout(graph, {  settings: settings, isNodeFixed: (_, attr) => attr.highlighted });
+      const sensibleSettings = graphologyLibrary.layoutForceAtlas2.inferSettings(graph)
+      const layout = new graphologyLibrary.FA2Layout(graph, {  settings: sensibleSettings, isNodeFixed: (_, attr) => attr.highlighted });
     {% endif %}
     layout.start();
 
@@ -189,6 +196,10 @@ function setHoveredNode(node) {
       renderer.getCamera().enable();
     });
 
+// We really only care about these even for tag nodes,
+// but there doesn't seem to be a way to filter.
+// Luckily, the CSS paths only match something when the 
+// node is a tag node, not a parcel node.
     renderer.on("enterNode", ({node}) => {
       setHoveredNode(node)
       document.querySelectorAll("#tagSelector>label[for='" +node+"']")
@@ -203,7 +214,13 @@ function setHoveredNode(node) {
           checkbox.classList.remove('highlighted')
         })
     });
-
+    renderer.on("clickNode", ({node}) => {
+      setHoveredNode(null)
+      document.querySelectorAll("#tagSelector>input[value='" +node+"']")
+        .forEach((checkbox) => {
+          checkbox.click()
+        })
+    });
 
 renderer.setSetting("nodeReducer", (node, data) => {
   let res = Object.assign({}, data );
