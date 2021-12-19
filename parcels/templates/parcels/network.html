@@ -81,7 +81,7 @@ Network of Parcels and Tags
     if (!checkbox.checked) {
         // We could drop node and all associated edges
         // graph.dropNode(tag_value)
-        // Just drop the edges
+        // Current behavior is to just drop the edges
         data.tags.forEach( (tag) => {
         if (tag_value === tag.tag_value) {
           graph.dropEdge(tag.tag_value, tag.GLOBAL_ID)
@@ -89,7 +89,7 @@ Network of Parcels and Tags
       })
     } else {
       // Re-add a node 
-      // graph.mergeNode(tag_value, {"label": tag_value,  size: 4, x:0, y:0}) 
+      // graph.mergeNode(tag_value, {"node_type": "TAG", "label": tag_value,  size: 4, x:0, y:0}) 
       // Re-add associated edges
       data.tags.forEach( (tag) => {
         if (tag_value === tag.tag_value) {
@@ -101,10 +101,10 @@ Network of Parcels and Tags
 
   function buildGraph() {
     data.tag_values.forEach((tag_value) => {
-        graph.mergeNode(tag_value, {"label": tag_value,  size: 4, x:0, x:0})
+        graph.mergeNode(tag_value, {"node_type": "TAG", "label": tag_value,  size: 4, x:0, x:0})
       })
       data.parcels.forEach((parcel) => {
-        graph.mergeNode(parcel.GLOBAL_ID, {"label": parcel.ADDRESS,   "size":8, color: "#0000FF" })
+        graph.mergeNode(parcel.GLOBAL_ID, {"node_type": "PARCEl", "label": parcel.ADDRESS,   "size":8, color: "#0000FF" })
       })
       data.tags.forEach( (tag) => {
           graph.mergeEdge(tag.tag_value, tag.GLOBAL_ID, {"label": tag.source_value})
@@ -196,30 +196,36 @@ function setHoveredNode(node) {
       renderer.getCamera().enable();
     });
 
-// We really only care about these even for tag nodes,
-// but there doesn't seem to be a way to filter.
-// Luckily, the CSS paths only match something when the 
-// node is a tag node, not a parcel node.
+// Hover over a tag
     renderer.on("enterNode", ({node}) => {
-      setHoveredNode(node)
-      document.querySelectorAll("#tagSelector>label[for='" +node+"']")
-        .forEach((checkbox) => {
-          checkbox.classList.add('highlighted')
-        })
+      const node_type = graph.getNodeAttribute(node, "node_type")
+      if (node_type == "TAG") {
+        setHoveredNode(node)
+        document.querySelectorAll("#tagSelector>label[for='" +node+"']")
+          .forEach((checkbox) => {
+            checkbox.classList.add('highlighted')
+          })
+      }
     });
     renderer.on("leaveNode", ({node}) => {
-      setHoveredNode(null)
-      document.querySelectorAll("#tagSelector>label[for='" +node+"']")
-        .forEach((checkbox) => {
-          checkbox.classList.remove('highlighted')
-        })
+      const node_type = graph.getNodeAttribute(node, "node_type")
+      if (node_type == "TAG") {
+        setHoveredNode(null)
+        document.querySelectorAll("#tagSelector>label[for='" +node+"']")
+          .forEach((checkbox) => {
+            checkbox.classList.remove('highlighted')
+          })
+      }
     });
     renderer.on("clickNode", ({node}) => {
-      setHoveredNode(null)
-      document.querySelectorAll("#tagSelector>input[value='" +node+"']")
-        .forEach((checkbox) => {
-          checkbox.click()
-        })
+      const node_type = graph.getNodeAttribute(node, "node_type")
+      if (node_type == "TAG") {
+        setHoveredNode(null)
+        document.querySelectorAll("#tagSelector>input[value='" +node+"']")
+          .forEach((checkbox) => {
+            checkbox.click()
+          })
+      }
     });
 
 renderer.setSetting("nodeReducer", (node, data) => {
