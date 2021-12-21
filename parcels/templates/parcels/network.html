@@ -75,8 +75,7 @@ Network of Parcels and Tags
     tag_values: [],
     parcels: []
   }
-  function handleTagSelectorChange(e) {
-    const checkbox = e.target
+  function handleTagSelectorChange(checkbox) {
     tag_value = checkbox.value
     if (!checkbox.checked) {
         // We could drop node and all associated edges
@@ -124,20 +123,10 @@ Network of Parcels and Tags
       data = d
       const tagSelector = document.getElementById("tagSelector");
       data.tag_values.forEach( (tag_value) => {
-        const checkbox = document.createElement('input')
-        checkbox.type = 'checkbox';
-        checkbox.name = 'tag_value_checkbox';
-        checkbox.value = tag_value;
-        checkbox.classList.add('mr-2')
-        checkbox.checked = true;
-        checkbox.onchange = handleTagSelectorChange
-        tagSelector.appendChild(checkbox)
-        var label = document.createElement('label')
-        label.htmlFor = tag_value;
-        label.appendChild(document.createTextNode(tag_value));
-        tagSelector.appendChild(label)
-        tagSelector.appendChild(document.createElement('br'))
+        const row = `<tr><td><input type='checkbox' name='tag_value_checkbox' id='${tag_value}' value='${tag_value}' checked onchange="handleTagSelectorChange(this)"></td><td><label for='${tag_value}'> ${tag_value}</label></td></tr>`
+        tagSelector.insertAdjacentHTML('beforeend',row)
       })
+
       buildGraph()
     // Create the spring layout and start it
     {% if layout == "ForceLayout" %}
@@ -201,7 +190,7 @@ function setHoveredNode(node) {
       const node_type = graph.getNodeAttribute(node, "node_type")
       if (node_type == "TAG") {
         setHoveredNode(node)
-        document.querySelectorAll("#tagSelector>label[for='" +node+"']")
+        document.querySelectorAll("#tagSelector label[for='" +node+"']")
           .forEach((checkbox) => {
             checkbox.classList.add('highlighted')
           })
@@ -211,7 +200,7 @@ function setHoveredNode(node) {
       const node_type = graph.getNodeAttribute(node, "node_type")
       if (node_type == "TAG") {
         setHoveredNode(null)
-        document.querySelectorAll("#tagSelector>label[for='" +node+"']")
+        document.querySelectorAll("#tagSelector label[for='" +node+"']")
           .forEach((checkbox) => {
             checkbox.classList.remove('highlighted')
           })
@@ -221,7 +210,7 @@ function setHoveredNode(node) {
       const node_type = graph.getNodeAttribute(node, "node_type")
       if (node_type == "TAG") {
         setHoveredNode(null)
-        document.querySelectorAll("#tagSelector>input[value='" +node+"']")
+        document.querySelectorAll("#tagSelector input[value='" +node+"']")
           .forEach((checkbox) => {
             checkbox.click()
           })
@@ -268,7 +257,15 @@ tags link together parcels is to used the <a href="portfolio_tags?PORT_ID={{PORT
 </p>
 <p>
   <h4>Shared Tags</h4>
-  <div id="tagSelector">   
+  <table class="table-sm" id='tags'>
+        <thead>
+            <th>Selected</th>
+            <th>Tag Value</th>
+        </thead>
+        <tbody id="tagSelector">
+        </tbody>
+    </table>
+
 </p>
   </div>
     <div id="graphContainer" />
