@@ -157,12 +157,14 @@ def portfolio_tags(request):
     for id in selected_tags.index.unique(): #parcel IDs
         uf.add(id)
     for tag_type_and_value, group in grouped_tags[COLUMNS.keyCol]:
-        rows = group.tolist()
-        if len(rows) > 1:
-            first = rows[0]
-            for other in rows[1:]:
-                if (first in uf and other in uf):
-                    uf.union(first, other)
+        tag_type_value = tag_type_and_value[0] +'|' + tag_type_and_value[1]
+        if tag_type_value in selected_tag_ids:
+            rows = group.tolist()
+            if len(rows) > 1:
+                first = rows[0]
+                for other in rows[1:]:
+                    if (first in uf and other in uf):
+                        uf.union(first, other)
 
     samePortfolio['portfolio_subgroup'] = 0
     portfolio_subgroup = 0
@@ -178,7 +180,7 @@ def portfolio_tags(request):
     unassigned_count = len(samePortfolio[samePortfolio['portfolio_subgroup']==0].index)
 
     # build the list of shared tags with an indication of how many
-    # unmatched parcled are still available for each
+    # unmatched parcels are still available for each
     unmatched_tags = tags[ ~ tags['tag_type_value'].isin(selected_tag_ids) ]
     selected_parcel_ids = selected_tags.index.unique()
     unmatched_tags = unmatched_tags[ ~ unmatched_tags.index.isin(selected_parcel_ids)]
