@@ -1,34 +1,31 @@
 {% extends 'base.html' %}
-
 {% block title %}Portfolios{% endblock title %}
 {% block content %}
 <h3>Portfolios matching <code>{{name}}</code></h3>
-<table class = "table">
+<table class="table">
     <thead>
         <th>Portfolio</th>
         <th>Size</th>
         <th>Owners</th>
     </thead>
     <tbody>
-{% for x in portfolios %}
+        {% for x in portfolios %}
         <tr>
-            <td><a href="portfolio?PORT_ID={{x.PORT_ID}}" >{{x.PORT_ID }}</a></td>
+            <td><a href="portfolio?PORT_ID={{x.PORT_ID}}">{{x.PORT_ID }}</a></td>
             <td>{{x.PORT_SZ}}</td>
             <td>{{x.PORTFOLIO_NAMES}}</td>
         </tr>
-{% endfor %}
+        {% endfor %}
     </tbody>
 </table>
-
 Find landlords
 <form action="./portfolio_search" method="post">
     <div class="form-group col-4">
         {% csrf_token %}
         <label for="name">Pattern</label>
-        <input name="name" value = "{{name}}"/>
+        <input name="name" value="{{name}}" />
         <small id="name" class="form-text text-muted">Enter a pattern for owner/applicant, e.g. Pat* Smith</small>
         <button type="submit" class="btn btn-primary">Search</button>
     </div>
 </form>
 {% endblock content %}
-

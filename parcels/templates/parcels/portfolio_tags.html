@@ -1,78 +1,89 @@
 <!-- prettier-ignore-start -->
 {% extends 'base.html' %}
 {% block title %}
-Portfolio 
+Portfolio
 {% endblock title %}
-
 {% block content %}
 <!-- prettier-ignore-end -->
 <script>
-function highlight(tagType, tagValue) {
-    $('#tags > tbody > tr').each((i, el) => {
-        const row = $(el)
-        const tagTypeEl = row.children('td')[1] 
-        const tagValueEl = row.children('td')[2] 
-        if( tagTypeEl.innerText == tagType && tagValueEl.innerText == tagValue) {
-            $('td', row).addClass('highlighted')  
-        }
-    })
-}
-function unhighlight(t) {
-    $( "#tags > tbody > tr > td" ).removeClass( "highlighted" );
-}
+    function highlight(tagType, tagValue) {
+        $('#tags > tbody > tr').each((i, el) => {
+            const row = $(el)
+            const tagTypeEl = row.children('td')[1]
+            const tagValueEl = row.children('td')[2]
+            if (tagTypeEl.innerText == tagType && tagValueEl.innerText == tagValue) {
+                $('td', row).addClass('highlighted')
+            }
+        })
+    }
+
+    function unhighlight(t) {
+        $("#tags > tbody > tr > td").removeClass("highlighted");
+    }
 </script>
 <style>
-.highlighted {
-    background-color: yellow
-}
-.hidden {
-    display: none;
-}
-.subgroup_1 {
-     background-color: #a6cee3
-}
-.subgroup_2 {
-     background-color: #1f78b4
-}
-.subgroup_3 {
-     background-color: #b2df8a
-}
-.subgroup_4 {
-     background-color: #33a02c
-}
-.subgroup_5 {
-     background-color: #fb9a99
-}
-.subgroup_6 {
-     background-color: #e31a1c
-}
-.subgroup_7 {
-     background-color: #fdbf6f
-}
-.subgroup_8 {
-     background-color: #ff7f00
-}
-.tag_link_selected {
-    color: lightgray
-}
-.tag_link_unselected {
-     color: black   
-}
+    .highlighted {
+        background-color: yellow
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .subgroup_1 {
+        background-color: #a6cee3
+    }
+
+    .subgroup_2 {
+        background-color: #1f78b4
+    }
+
+    .subgroup_3 {
+        background-color: #b2df8a
+    }
+
+    .subgroup_4 {
+        background-color: #33a02c
+    }
+
+    .subgroup_5 {
+        background-color: #fb9a99
+    }
+
+    .subgroup_6 {
+        background-color: #e31a1c
+    }
+
+    .subgroup_7 {
+        background-color: #fdbf6f
+    }
+
+    .subgroup_8 {
+        background-color: #ff7f00
+    }
+
+    .tag_link_selected {
+        color: lightgray
+    }
+
+    .tag_link_unselected {
+        color: black
+    }
 </style>
 <h3>Portfolio Tags for {{PORT_ID}}</h3>
 <a href="map?PORT_ID={{PORT_ID}}">Map View</a>
- | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> | <span>Tag View</span> 
- | <a href="network?PORT_ID={{PORT_ID}}">Network View</a>
+| <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> | <span>Tag View</span>
+| <a href="network?PORT_ID={{PORT_ID}}">Network View</a>
 <p>
-This page allows you to investigate the shared tags that were used to link together parcels into
-this portfolio.  Below, select just the tags that you are confident should be used to link  parcels.
-When you submit your selection you will see how the parcels fall into subgroups. Another way to visualize how
-tags link together parcels is to used the <a href="network?PORT_ID={{PORT_ID}}">Network View</a>.
+    This page allows you to investigate the shared tags that were used to link together parcels into
+    this portfolio. Below, select just the tags that you are confident should be used to link parcels.
+    When you submit your selection you will see how the parcels fall into subgroups. Another way to visualize how
+    tags link together parcels is to used the <a href="network?PORT_ID={{PORT_ID}}">Network View</a>.
 </p>
 <h3> Shared Tags </h3>
 <form method="post">
     {% csrf_token %}
-    <input type='hidden' name="PORT_ID" value="{{PORT_ID}}"/>
+    <input type='hidden' name="PORT_ID" value="{{PORT_ID}}" />
     <table class="table-sm" id='tags'>
         <thead>
             <th>Selected</th>
@@ -82,22 +93,22 @@ tags link together parcels is to used the <a href="network?PORT_ID={{PORT_ID}}">
             <th>Ungrouped parcels</th>
         </thead>
         <tbody>
-    {% for tag in shared_tags %}
+            {% for tag in shared_tags %}
             <tr>
-                <td > <input type="checkbox" name="selected_tag_ids[]" value="{{tag.tag_type_value}}" {% if tag.checked %} checked {% endif %} }/> </td>
-                <td >{{tag.tag_type }}</td>
-                <td ><a id="{{tag.tag_type_value}}"> {{tag.tag_value }}</a></td>
-                <td >{{tag.parcels}}</td>
-                <td > {% if tag.unassigned %} {{tag.unassigned  }} {% endif %} </td>
+                <td> <input type="checkbox" name="selected_tag_ids[]" value="{{tag.tag_type_value}}"
+                        {% if tag.checked %} checked {% endif %} } /> </td>
+                <td>{{tag.tag_type }}</td>
+                <td><a id="{{tag.tag_type_value}}"> {{tag.tag_value }}</a></td>
+                <td>{{tag.parcels}}</td>
+                <td> {% if tag.unassigned %} {{tag.unassigned }} {% endif %} </td>
             </tr>
-    {% endfor %}
+            {% endfor %}
         </tbody>
     </table>
     <input type="submit" name="OK">
 </form>
-
 <h3> Parcels</h3>
-<h4>  {{subgroup_count}} subgroups and  {{unassigned_count}} ungrouped parcels</h4>
+<h4> {{subgroup_count}} subgroups and {{unassigned_count}} ungrouped parcels</h4>
 <table class="table">
     <thead>
         <th>Address</td>
@@ -105,22 +116,22 @@ tags link together parcels is to used the <a href="network?PORT_ID={{PORT_ID}}">
         <th>Names</th>
     </thead>
     <tbody>
-{% for parcel in samePortfolio %}
-    <tr>
-        <td ><a href="property?key={{parcel.GLOBAL_ID}}" >{{parcel.ADDRESS }}</a>
-        {% if parcel.tag_tuples %}
-            <br>
-            Tags: {% for tuple in parcel.tag_tuples %}
-                <a href="#{{tuple.1}}" class={% if tuple.2 %} "tag_link_selected" {%else%} "tag_link_unselected" {%endif%}>{{tuple.0}}</A>&nbsp; &nbsp; 
-            {% endfor %}
-        {% endif %}
-        </td>
-        <td class="subgroup_{{parcel.portfolio_subgroup}}"> {% if parcel.portfolio_subgroup %} {{parcel.portfolio_subgroup }} {% endif %} </a></td>
-        <td >{{parcel.NAMES }}</td>
-    </tr>
-    {% endfor %}
+        {% for parcel in samePortfolio %}
+        <tr>
+            <td><a href="property?key={{parcel.GLOBAL_ID}}">{{parcel.ADDRESS }}</a>
+                {% if parcel.tag_tuples %}
+                <br>
+                Tags: {% for tuple in parcel.tag_tuples %}
+                <a href="#{{tuple.1}}" class={% if tuple.2 %} "tag_link_selected" {%else%} "tag_link_unselected"
+                    {%endif%}>{{tuple.0}}</A>&nbsp; &nbsp;
+                {% endfor %}
+                {% endif %}
+            </td>
+            <td class="subgroup_{{parcel.portfolio_subgroup}}"> {% if parcel.portfolio_subgroup %}
+                {{parcel.portfolio_subgroup }} {% endif %} </a></td>
+            <td>{{parcel.NAMES }}</td>
+        </tr>
+        {% endfor %}
     </tbody>
 </table>
-
-
 {% endblock content %}

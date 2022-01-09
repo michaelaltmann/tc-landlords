@@ -1,10 +1,8 @@
-<!-- prettier-ignore -->
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
 {% block title %}
 Rental Properties
 {% endblock title %}
 {% block content %}
- 
 {% if properties and not properties.empty %}
 <table class="table">
   <thead>
@@ -29,7 +27,6 @@ Rental Properties
   {% csrf_token %} Address: <input name="address" value="{{address}}" />
   <button type="submit" class="btn btn-primary">Search</button>
 </form>
-
 Search for owner
 <form action="./portfolio_search" method="post">
   {% csrf_token %} Pattern: <input name="name" value="{{name}}" />

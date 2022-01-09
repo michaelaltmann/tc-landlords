@@ -1,85 +1,76 @@
-<!-- prettier-ignore -->
 {% extends 'base.html' %}
 {% block title %}License Details{% endblock title %}
 {% block content %}
- 
 <p>
-        <h3> Details for {{ADDRESS}}</h3>
-        <pre>
-            {{ details }}
-        </pre>
-    </p>
-    
-    <h3> Tags</h3>
-    <table class="table-sm">
-        <thead>
-            <th>Tag</th>
-            <th>Value</th>
-            <th>Source</th>
-            <th>Source Value</th>
-        </thead>
-        <tbody>
-    {% for tag in tags %}
-            <tr>
-                <td>{{tag.tag_type }}</td>
-                <td>{{tag.tag_value }}</td>
-                <td>{{tag.source_type }}</td>
-                <td>{{tag.source_value }}</td>
-            </tr>
-    {% endfor %}
-        </tbody>
-    </table>
-
-    {% if violations %}
-
-    <h3>Violations ({{violations|length}})</h3>
-    <table class="table-sm">
-        <thead>
-            <th>Date</th>
-            <th>Case No.</th>
-            <th>Violator</th>
-            <th>Grouping</th>
-            <th>Description</th>
-        </thead>
-        <tbody>
-    {% for violation in violations %}
-            <tr>
-                <td>{{violation.violationDate }}</td>
-                <td>{{violation.caseNumber }}</td>
-                <td>{{violation.violatorName }}</td>
-                <td>{{violation.grouping }}</td>
-                <td>{{violation.description }}</td>
-            </tr>
-    {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <h3>No Violations</h3>
-    {% endif %}
-
-
-    <p>
+    <h3> Details for {{ADDRESS}}</h3>
+    <pre>
+    {{ details }}
+    </pre>
+</p>
+<h3> Tags</h3>
+<table class="table-sm">
+    <thead>
+        <th>Tag</th>
+        <th>Value</th>
+        <th>Source</th>
+        <th>Source Value</th>
+    </thead>
+    <tbody>
+        {% for tag in tags %}
+        <tr>
+            <td>{{tag.tag_type }}</td>
+            <td>{{tag.tag_value }}</td>
+            <td>{{tag.source_type }}</td>
+            <td>{{tag.source_value }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if violations %}
+<h3>Violations ({{violations|length}})</h3>
+<table class="table-sm">
+    <thead>
+        <th>Date</th>
+        <th>Case No.</th>
+        <th>Violator</th>
+        <th>Grouping</th>
+        <th>Description</th>
+    </thead>
+    <tbody>
+        {% for violation in violations %}
+        <tr>
+            <td>{{violation.violationDate }}</td>
+            <td>{{violation.caseNumber }}</td>
+            <td>{{violation.violatorName }}</td>
+            <td>{{violation.grouping }}</td>
+            <td>{{violation.description }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<h3>No Violations</h3>
+{% endif %}
+<p>
     <h3>Rental Properties in this Landlord's Portfolio ({{sameOwner|length}})</h3>
     <a href="map?PORT_ID={{PORT_ID}}">Map View</a> | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a>
-
     <table class="table">
         <thead>
             <tr>
                 <th>Address</th>
                 <th>Names</th>
                 <th>Violations</th>
-        </tr>
+            </tr>
         </thead>
         <tbody>
-    {% for parcel in sameOwner %}
-    <tr>
-        <td><a href="property?key={{parcel.GLOBAL_ID}}" >{{parcel.ADDRESS }}</a></td>
-        <td>{{parcel.NAMES }}</td>
-        <td>{{parcel.violationCount }}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
+            {% for parcel in sameOwner %}
+            <tr>
+                <td><a href="property?key={{parcel.GLOBAL_ID}}">{{parcel.ADDRESS }}</a></td>
+                <td>{{parcel.NAMES }}</td>
+                <td>{{parcel.violationCount }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-    </p>
-
+</p>
 {% endblock content %}

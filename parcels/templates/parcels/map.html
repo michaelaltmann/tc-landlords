@@ -1,22 +1,18 @@
-
 {% extends 'base.html' %}
-
 {% block title %}Portfolio {% endblock title %}
-
 {% block content %}
 <H3>Portfolio {{PORT_ID}}</H3>
-<span>Map View</span> | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a> 
- | <a href="portfolio_tags?PORT_ID={{PORT_ID}}">Tag View</a>
- | <a href="network?PORT_ID={{PORT_ID}}">Network View</a>
-
+<span>Map View</span> | <a href="portfolio?PORT_ID={{PORT_ID}}">List View</a>
+| <a href="portfolio_tags?PORT_ID={{PORT_ID}}">Tag View</a>
+| <a href="network?PORT_ID={{PORT_ID}}">Network View</a>
 <div id="featureDetail"></div>
 <div class="container">
-   <div id='map' width="450px" style='height:700px'></div>
-   <div class="loader spinner-border" title="0" id="loader"></div>
+    <div id='map' width="450px" style='height:700px'></div>
+    <div class="loader spinner-border" title="0" id="loader"></div>
 </div>
- 
- <script>
+<script>
     mapboxgl.accessToken = '{{ mapbox_access_token }}';
+
     function zoomToBounds(map, coordinates) {
         // Adjust the map bounds to include a set of coordinates
         if (coordinates) {
@@ -25,32 +21,32 @@
             // result. A variation of this technique could be applied to zooming
             // to the bounds of multiple Points or Polygon geomteries - it just
             // requires wrapping all the coordinates with the extend method.
-            var bounds = coordinates.reduce(function(bounds, coord) {
-            return bounds.extend(coord);
+            var bounds = coordinates.reduce(function (bounds, coord) {
+                return bounds.extend(coord);
             }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
 
             map.fitBounds(bounds, {
-            padding: 20
+                padding: 20
             });
         }
     };
     var map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/light-v10', // stylesheet location
-        center: [-93.26,44.97], // starting position [lng, lat]
+        center: [-93.26, 44.97], // starting position [lng, lat]
         zoom: 9 // starting zoom
     });
-    map.on('sourcedata', function(e) {
+    map.on('sourcedata', function (e) {
         document.getElementById("loader").style.visibility = "hidden";
     })
 
-    map.on('load', function() {
+    map.on('load', function () {
         var selectedFeatureId = null;
         map.addSource('portfolio', {
             type: 'geojson',
             data: '/api/portfolio.json?PORT_ID={{PORT_ID}}',
-            'generateId': true 
-            });
+            'generateId': true
+        });
 
         map.addLayer({
             'id': 'portfolio',
@@ -65,15 +61,17 @@
                     ['boolean',
                         ['feature-state', 'hover'],
                         false
-                    ],'lightGreen', 'darkGreen']
-                }
-            })
+                    ], 'lightGreen', 'darkGreen'
+                ]
+            }
+        })
         map.on('mousemove', 'portfolio', function (e) {
             var features = e.features;
             var hover;
             if (features.length != 0) {
                 var feature = features[0]
-                hover = '<b> <a href = "property?key='+feature.properties.GLOBAL_ID+'" >' + feature.properties.ADDRESS + '</a></b> ' + feature.properties.NAMES 
+                hover = '<b> <a href = "property?key=' + feature.properties.GLOBAL_ID + '" >' + feature
+                    .properties.ADDRESS + '</a></b> ' + feature.properties.NAMES
                 document.getElementById('featureDetail').innerHTML = hover
                 if (selectedFeatureId) {
                     map.removeFeatureState({
@@ -85,14 +83,13 @@
                 map.setFeatureState({
                     source: 'portfolio',
                     id: selectedFeatureId,
-                    }, {
+                }, {
                     hover: true
                 });
             }
-        }) 
+        })
 
- 
+
     })
 </script>
-
 {% endblock content %}

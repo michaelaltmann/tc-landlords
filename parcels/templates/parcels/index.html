@@ -1,15 +1,12 @@
-<!-- prettier-ignore -->
-{% extends 'base.html' %} 
-{% block title %} 
-Summary of Rental Licenses 
-{% endblock title %} 
+{% extends 'base.html' %}
+{% block title %}
+Summary of Rental Licenses
+{% endblock title %}
 {% block content %}
-
 <h3>A sample of license data</h3>
 <pre>
-    {{ parcels }}
+{{ parcels }}
 </pre>
-
 Find rental properties by address
 <form action="./search" method="post">
   <div class="form-group col-4">
@@ -19,16 +16,13 @@ Find rental properties by address
     <button type="submit" class="btn btn-primary">Search</button>
   </div>
 </form>
-
 Find landlords
 <form action="./portfolio_search" method="post">
   <div class="form-group col-4">
     {% csrf_token %}
     <label for="name">Pattern</label>
     <input name="name" value="{{name}}" />
-    <small id="name" class="form-text text-muted"
-      >Enter a pattern for owner/applicant, e.g. Pat* Smith</small
-    >
+    <small id="name" class="form-text text-muted">Enter a pattern for owner/applicant, e.g. Pat* Smith</small>
     <button type="submit" class="btn btn-primary">Search</button>
   </div>
 </form>
